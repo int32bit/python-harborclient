@@ -63,7 +63,7 @@ source ~/.admin-harborrc
 
 List users:
 
-```sh
+```
 $ harbor user-list
 +---------+----------+----------------------+--------------+-------------+
 | user_id | username |        email         |   realname   |   comment   |
@@ -75,7 +75,7 @@ $ harbor user-list
 
 ## Run in Docker
 
-you can pull from dockerhub as follows:
+You can pull from Dockerhub directly:
 
 ```sh
 docker pull krystism/harborclient
@@ -104,7 +104,7 @@ $ docker run \
 +---------+----------+----------------------+--------------+-------------+
 ```
 
-You can create an bash alias for simplify input as follows:
+You can create an bash alias for simplify input:
 
 ```bash
 alias harbor='docker run \
@@ -112,4 +112,16 @@ alias harbor='docker run \
  -e HARBOR_PASSWORD="Harbor12345" \
  -e HARBOR_URL="http://192.168.56.4" \
  --net host --rm krystism/harborclient'
+```
+
+Then run as a simpler way:
+
+```
+$ harbor user-list
++---------+----------+----------------------+--------------+-------------+
+| user_id | username |        email         |   realname   |   comment   |
++---------+----------+----------------------+--------------+-------------+
+|    3    | int32bit | int32bit@example.com |   int32bit   |      -      |
+|    4    |  harbor  |  harbor@example.com  | harbor@12345 | harbor test |
++---------+----------+----------------------+--------------+-------------+
 ```
