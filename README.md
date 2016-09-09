@@ -19,6 +19,7 @@ git clone https://github.com/int32bit/harborclient
 Install Harborclient with the following commands. Note that the setup process can take a while.
 
 ```sh
+sudo pip install -r requirements.txt
 sudo python setup.py install
 ```
 
@@ -72,3 +73,43 @@ $ harbor user-list
 +---------+----------+----------------------+--------------+-------------+
 ```
 
+## Run in Docker
+
+you can pull from dockerhub as follows:
+
+```sh
+docker pull krystism/harborclient
+```
+
+Or you can also build yourself on your localhost:
+
+```sh
+docker build -t yourname/harborclient .
+```
+
+Then run a docker instance as follows:
+
+```
+$ docker run \
+ -e HARBOR_USERNAME="admin" \
+ -e HARBOR_PASSWORD="Harbor12345" \
+ -e HARBOR_URL="http://192.168.56.4" \
+ --net host --rm krystism/harborclient user-list
+
++---------+----------+----------------------+--------------+-------------+
+| user_id | username |        email         |   realname   |   comment   |
++---------+----------+----------------------+--------------+-------------+
+|    3    | int32bit | int32bit@example.com |   int32bit   |      -      |
+|    4    |  harbor  |  harbor@example.com  | harbor@12345 | harbor test |
++---------+----------+----------------------+--------------+-------------+
+```
+
+You can create an bash alias for simplify input as follows:
+
+```bash
+alias harbor='docker run \
+ -e HARBOR_USERNAME="admin" \
+ -e HARBOR_PASSWORD="Harbor12345" \
+ -e HARBOR_URL="http://192.168.56.4" \
+ --net host --rm krystism/harborclient'
+```
