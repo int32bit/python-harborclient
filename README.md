@@ -127,3 +127,93 @@ $ harbor user-list
 |    4    |  harbor  |  harbor@example.com  | harbor@12345 | harbor test |
 +---------+----------+----------------------+--------------+-------------+
 ```
+
+## Usage examples
+
+Get top 5 accessed repositories:
+
+```
+$ harbor top
++----------------+-------+
+|      name      | count |
++----------------+-------+
+| library/ubuntu |   129 |
+| int32bit/harbor|   24  |
+| library/python |   21  |
+| library/centos |   10  |
+| int32bit/qrcode|   2   |
++----------------+-------+
+```
+
+Get current user of statistics data:
+
+```
+$ harbor statistics
++----------------------+-------+
+| Property             | Value |
++----------------------+-------+
+| my_project_count     | 3     |
+| my_repo_count        | 1     |
+| public_project_count | 3     |
+| public_repo_count    | 1     |
+| total_project_count  | 3     |
+| total_repo_count     | 1     |
++----------------------+-------+
+```
+
+Show details about the given repository with `--debug` option:
+
+```
+$ harbor --debug show ubuntu:14.04
+DEBUG (client:282) Successfully login, session id: 82591b568920b4a4f2c36ca1cac4795f
+REQ: curl -g -i 'http://192.168.56.4/api/repositories/manifests?repo_name=library/ubuntu&tag=14.04' -X GET -H "Accept: application/json" -H "User-Agent: python-harborclient" -b "beegosessionID: 82591b568920b4a4f2c36ca1cac4795f"
+RESP: [200] {'Date': 'Fri, 09 Sep 2016 13:40:02 GMT', 'Content-Length': '320', 'Content-Type': 'application/json; charset=utf-8', 'Connection': 'keep-alive', 'Server': 'nginx/1.9.15'}
+RESP BODY: {"Parent": "0e23078ccd338d08cf033f6a300f4dce86a95381c4a9a4beed6cd5a460645ee1", "Author": "", "Created": "2016-05-03T23:11:04.403014677Z", "Docker Version": "", "Duration Days": "128 days", "Architecture": "amd64", "OS": "linux", "Id": "06cc1800c7a47f86127b01cbc13874a4dc8f0bbbe0b45e4a9d4374f13944fe25"}
+
++----------------+------------------------------------------------------------------+
+| Property       | Value                                                            |
++----------------+------------------------------------------------------------------+
+| Architecture   | amd64                                                            |
+| Author         |                                                                  |
+| Created        | 2016-05-03T23:11:04.403014677Z                                   |
+| Docker Version |                                                                  |
+| Duration Days  | 128 days                                                         |
+| Id             | 06cc1800c7a47f86127b01cbc13874a4dc8f0bbbe0b45e4a9d4374f13944fe25 |
+| OS             | linux                                                            |
+| Parent         | 0e23078ccd338d08cf033f6a300f4dce86a95381c4a9a4beed6cd5a460645ee1 |
++----------------+------------------------------------------------------------------+
+```
+
+Print call timing info with `--timings` option:
+
+```
+$ harbor --timings list
++--------------+----------------+-------+---------+--------------+-------+
+|      Id      |      Name      |  Tag  | Project | Architecture |   OS  |
++--------------+----------------+-------+---------+--------------+-------+
+| 06cc1800c7a4 | library/ubuntu | 14.04 |    1    |    amd64     | linux |
++--------------+----------------+-------+--------+---------+-------------+
++----------------------------------------------------------------+------------------+
+| url                                                            | seconds          |
++----------------------------------------------------------------+------------------+
+| GET /repositories?project_id=1                                 | 0.00539398193359 |
+| GET /repositories/tags?repo_name=library/ubuntu                | 0.0393018722534  |
+| GET /repositories/manifests?repo_name=library/ubuntu&tag=14.04 | 0.0534088611603  |
+| Total                                                          | 0.0981047153473  |
++----------------------------------------------------------------+------------------+
+Total: 0.0981047153473 seconds
+```
+
+See `harbor help` for more usage info.
+
+## Issues
+
+1. Can't show `admin` user info with name, but `id` work.
+2. Delete one user, then create a new user with same email will always fail.
+3. Can't delete a project.
+
+## TODO
+
+## Licensing
+
+HarborClient is licensed under the MIT License, Version 2.0. See [LICENSE](./LICENSE) for the full license text.
