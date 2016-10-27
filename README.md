@@ -214,6 +214,11 @@ See `harbor help` for more usage info.
 
 ## TODO
 
+- [ ] Delete Image
+- [ ] Upload Image
+- [ ] Create Project
+- [ ] ...
+
 ## Licensing
 
 HarborClient is licensed under the MIT License, Version 2.0. See [LICENSE](./LICENSE) for the full license text.
