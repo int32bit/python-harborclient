@@ -3,20 +3,11 @@ Harbor Client interface. Handles the REST calls and responses.
 """
 
 import copy
-import functools
-import glob
 import hashlib
-import imp
-import itertools
 import logging
-import os
-import pkgutil
-import re
 import warnings
 
 from oslo_utils import importutils
-from oslo_utils import netutils
-import pkg_resources
 import requests
 
 try:
@@ -24,11 +15,10 @@ try:
 except ImportError:
     import simplejson as json
 
-from six.moves.urllib import parse
-
 from harborclient import api_versions
 from harborclient import exceptions
-from harborclient.i18n import _, _LW
+from harborclient.i18n import _
+from harborclient.i18n import _LW
 from harborclient import utils
 
 
@@ -74,8 +64,9 @@ class HTTPClient(object):
 
     def unauthenticate(self):
         """Forget all of our authentication information."""
-        requests.get('%s://%s/logout' % (self.protocol, self.host),
-                     cookies={'beegosessionID': self.session_id})
+        requests.get(
+            '%s://%s/logout' % (self.protocol, self.host),
+            cookies={'beegosessionID': self.session_id})
         logging.debug("Successfully logout")
 
     def get_timings(self):
@@ -162,9 +153,11 @@ class HTTPClient(object):
             body = None
 
         self._logger.debug("RESP: [%(status)s] %(headers)s\nRESP BODY: "
-                           "%(text)s\n", {'status': resp.status_code,
-                                          'headers': resp.headers,
-                                          'text': json.dumps(body)})
+                           "%(text)s\n", {
+                               'status': resp.status_code,
+                               'headers': resp.headers,
+                               'text': json.dumps(body)
+                           })
 
     def request(self, url, method, **kwargs):
         url = self.baseurl + "/api" + url
@@ -180,11 +173,6 @@ class HTTPClient(object):
             kwargs.setdefault('timeout', self.timeout)
 
         self.http_log_req(method, url, kwargs)
-
-        #request_func = requests.request
-        #session = self._get_session(url)
-        #if session:
-        #    request_func = session.request
 
         resp = requests.request(method, url, **kwargs)
         self.http_log_resp(resp)
@@ -278,8 +266,8 @@ class HTTPClient(object):
                   'password': self.password})
         if resp.status_code == 200:
             self.session_id = resp.cookies.get('beegosessionID')
-            logging.debug("Successfully login, session id: %s" %
-                          self.session_id)
+            logging.debug(
+                "Successfully login, session id: %s" % self.session_id)
 
 
 def _construct_http_client(username=None,
@@ -310,8 +298,8 @@ def _get_client_class_and_version(version):
     if version.is_latest():
         raise exceptions.UnsupportedVersion(
             _("The version should be explicit, not latest."))
-    return version, importutils.import_class("harborclient.v%s.client.Client" %
-                                             version.ver_major)
+    return version, importutils.import_class(
+        "harborclient.v%s.client.Client" % version.ver_major)
 
 
 def get_client_class(version):

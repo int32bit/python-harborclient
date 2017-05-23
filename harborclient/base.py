@@ -2,27 +2,12 @@
 Base utilities to build API operation managers and objects on top of.
 """
 
-import abc
-import contextlib
-import copy
-import hashlib
-import inspect
-import os
-import threading
-
-from oslo_utils import strutils
-from requests import Response
-import six
-
-from harborclient import exceptions
-from harborclient import utils
-
 
 class Manager(object):
     """Manager for API service.
 
-    Managers interact with a particular type of API (projects, users, reposiries,
-    etc.) and provide CRUD operations for them.
+    Managers interact with a particular type of API (projects, users,
+    reposiries,etc.) and provide CRUD operations for them.
     """
 
     def __init__(self, api):

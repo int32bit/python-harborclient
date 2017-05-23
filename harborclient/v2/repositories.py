@@ -1,16 +1,9 @@
-"""
-User interface.
-"""
-
 from harborclient import base
-from harborclient import exceptions
-from harborclient.i18n import _
 
 
 class RepositoryManager(base.Manager):
     def get(self, id):
-        """
-        Get a project.
+        """Get a project.
 
         :param id: ID of the :class:`User` to get.
         :rtype: :class:`User`
@@ -18,8 +11,7 @@ class RepositoryManager(base.Manager):
         return self._get("/repositories/%s" % id)
 
     def list(self, project_id):
-        """
-        Get a list of users.
+        """Get a list of users.
 
         :rtype: list of :class:`User`
 
@@ -28,8 +20,8 @@ class RepositoryManager(base.Manager):
         return repositories
 
     def list_tags(self, repo_name):
-        return self.api.client.get("/repositories/tags?repo_name=%s" %
-                                   repo_name)
+        return self.api.client.get(
+            "/repositories/tags?repo_name=%s" % repo_name)
 
     def get_manifests(self, repo_name, tag):
         return self.api.client.get(
@@ -46,8 +38,7 @@ class RepositoryManager(base.Manager):
         return self._create("/users", data)
 
     def delete(self, id):
-        """
-        Delete (i.e. shut down and delete the image) this server.
+        """Delete (i.e. shut down and delete the image) this server.
 
         :param server: The :class:`Server` (or its ID) to delete
         :returns: An instance of harborclient.base.TupleWithMeta

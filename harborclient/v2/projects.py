@@ -1,10 +1,5 @@
-"""
-User interface.
-"""
-
 from harborclient import base
 from harborclient import exceptions as exp
-from harborclient.i18n import _
 
 
 class ProjectManager(base.Manager):
@@ -12,8 +7,7 @@ class ProjectManager(base.Manager):
         return key.isdigit()
 
     def get(self, id):
-        """
-        Get a project.
+        """Get a project.
 
         :param id: ID of the :class:`User` to get.
         :rtype: :class:`User`
@@ -21,8 +15,7 @@ class ProjectManager(base.Manager):
         return self._get("/projects/%s" % id)
 
     def list(self):
-        """
-        Get a list of projects.
+        """Get a list of projects.
 
         :rtype: list of :class:`Project`
 
@@ -54,8 +47,7 @@ class ProjectManager(base.Manager):
         return self._create("/users", data)
 
     def delete(self, id):
-        """
-        Delete (i.e. shut down and delete the image) this server.
+        """Delete (i.e. shut down and delete the image) this server.
 
         :param server: The :class:`Server` (or its ID) to delete
         :returns: An instance of harborclient.base.TupleWithMeta

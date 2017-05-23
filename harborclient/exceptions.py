@@ -4,14 +4,17 @@ Exception definitions.
 
 
 class UnsupportedVersion(Exception):
-    """Indicates that the user is trying to use an unsupported
-    version of the API.
+    """Unsupport API version.
+
+    Indicates that the user is trying to use an unsupported version of the API.
     """
     pass
 
 
 class UnsupportedAttribute(AttributeError):
-    """Indicates that the user is trying to transmit the argument to a method,
+    """Unsupport attribute
+
+    Indicates that the user is trying to transmit the argument to a method,
     which is not supported by selected version.
     """
 
@@ -19,14 +22,18 @@ class UnsupportedAttribute(AttributeError):
         if end_version:
             self.message = (
                 "'%(name)s' argument is only allowed for microversions "
-                "%(start)s - %(end)s." % {"name": argument_name,
-                                          "start": start_version,
-                                          "end": end_version})
+                "%(start)s - %(end)s." % {
+                    "name": argument_name,
+                    "start": start_version,
+                    "end": end_version
+                })
         else:
             self.message = (
                 "'%(name)s' argument is only allowed since microversion "
-                "%(start)s." % {"name": argument_name,
-                                "start": start_version})
+                "%(start)s." % {
+                    "name": argument_name,
+                    "start": start_version
+                })
 
 
 class CommandError(Exception):
@@ -49,13 +56,6 @@ class AuthSystemNotFound(Exception):
 
     def __str__(self):
         return "AuthSystemNotFound: %s" % repr(self.auth_system)
-
-
-class NoTokenLookupException(Exception):
-    """This form of authentication does not support looking up
-       endpoints from an existing token.
-    """
-    pass
 
 
 class UserNotFound(Exception):
@@ -82,9 +82,7 @@ class AmbiguousEndpoints(Exception):
 
 
 class ConnectionRefused(Exception):
-    """
-    Connection refused: the server refused the connection.
-    """
+    """Connection refused: the server refused the connection."""
 
     def __init__(self, response=None):
         self.response = response
@@ -121,9 +119,7 @@ class InstanceInDeletedState(Exception):
 
 
 class ClientException(Exception):
-    """
-    The base exception class for all exceptions this library raises.
-    """
+    """The base exception class for all exceptions this library raises."""
     message = 'Unknown Error'
 
     def __init__(self,
@@ -149,7 +145,8 @@ class ClientException(Exception):
 
 
 class RetryAfterException(ClientException):
-    """
+    """Retry exception
+
     The base exception class for ClientExceptions that use Retry-After header.
     """
 
@@ -163,23 +160,20 @@ class RetryAfterException(ClientException):
 
 
 class BadRequest(ClientException):
-    """
-    HTTP 400 - Bad request: you sent some malformed data.
-    """
+    """HTTP 400 - Bad request: you sent some malformed data."""
     http_status = 400
     message = "Bad request"
 
 
 class Unauthorized(ClientException):
-    """
-    HTTP 401 - Unauthorized: bad credentials.
-    """
+    """HTTP 401 - Unauthorized: bad credentials."""
     http_status = 401
     message = "Unauthorized"
 
 
 class Forbidden(ClientException):
-    """
+    """HTTP 403 - Forbidden
+
     HTTP 403 - Forbidden: your credentials don't give you access to this
     resource.
     """
@@ -188,48 +182,42 @@ class Forbidden(ClientException):
 
 
 class NotFound(ClientException):
-    """
-    HTTP 404 - Not found
-    """
+    """HTTP 404 - Not found"""
     http_status = 404
     message = "Not found"
 
 
 class MethodNotAllowed(ClientException):
-    """
-    HTTP 405 - Method Not Allowed
-    """
+    """HTTP 405 - Method Not Allowed"""
     http_status = 405
     message = "Method Not Allowed"
 
 
 class NotAcceptable(ClientException):
-    """
-    HTTP 406 - Not Acceptable
-    """
+    """HTTP 406 - Not Acceptable"""
     http_status = 406
     message = "Not Acceptable"
 
 
 class Conflict(ClientException):
-    """
-    HTTP 409 - Conflict
-    """
+    """HTTP 409 - Conflict"""
     http_status = 409
     message = "Conflict"
 
 
 class OverLimit(RetryAfterException):
-    """
-    HTTP 413 - Over limit: you're over the API limits for this time period.
+    """HTTP 413 - Over limit
+
+    You're over the API limits for this time period.
     """
     http_status = 413
     message = "Over limit"
 
 
 class RateLimit(RetryAfterException):
-    """
-    HTTP 429 - Rate limit: you've sent too many requests for this time period.
+    """HTTP 429 - Rate limit
+
+    you've sent too many requests for this time period.
     """
     http_status = 429
     message = "Rate limit"
@@ -237,11 +225,13 @@ class RateLimit(RetryAfterException):
 
 # NotImplemented is a python keyword.
 class HTTPNotImplemented(ClientException):
-    """
-    HTTP 501 - Not Implemented: the server does not support this operation.
+    """HTTP 501 - Not Implemented
+
+    the server does not support this operation.
     """
     http_status = 501
     message = "Not Implemented"
+
 
 # In Python 2.4 Exception is old-style and thus doesn't have a __subclasses__()
 # so we can do this:
@@ -249,9 +239,10 @@ class HTTPNotImplemented(ClientException):
 #                      for c in ClientException.__subclasses__())
 #
 # Instead, we have to hardcode it:
-_error_classes = [BadRequest, Unauthorized, Forbidden, NotFound,
-                  MethodNotAllowed, NotAcceptable, Conflict, OverLimit,
-                  RateLimit, HTTPNotImplemented]
+_error_classes = [
+    BadRequest, Unauthorized, Forbidden, NotFound, MethodNotAllowed,
+    NotAcceptable, Conflict, OverLimit, RateLimit, HTTPNotImplemented
+]
 _code_map = dict((c.http_status, c) for c in _error_classes)
 
 
@@ -266,9 +257,10 @@ class InvalidUsage(RuntimeError):
 
 
 def from_response(response, body, url, method=None):
-    """
-    Return an instance of an ClientException or subclass
-    based on a requests response.
+    """Extract exception from response
+
+    Return an instance of an ClientException or subclass baseda
+    on a requests response.
 
     Usage::
 
@@ -311,7 +303,7 @@ def from_response(response, body, url, method=None):
                 # WebOb<1.6.0 where we assume there is a single error message
                 # key to the body that has the message and details.
                 error = body[list(body)[0]]
-                if type(error) == type([]):
+                if isinstance(error, list):
                     message = error[0].get('message')
                     details = error[0].get('details')
                 else:

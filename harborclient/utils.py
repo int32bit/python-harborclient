@@ -1,19 +1,12 @@
 import contextlib
-import json
 import os
-import re
 import textwrap
 import time
-import uuid
 
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-import pkg_resources
 import prettytable
 import six
-
-from harborclient import exceptions
-from harborclient.i18n import _
 
 
 def env(*args, **kwargs):

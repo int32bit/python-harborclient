@@ -6,8 +6,10 @@ from __future__ import print_function
 import argparse
 import logging
 import sys
+
 from oslo_utils import encodeutils
 from oslo_utils import importutils
+
 import harborclient
 from harborclient import api_versions
 from harborclient import client
@@ -16,6 +18,7 @@ from harborclient.i18n import _
 from harborclient import utils
 
 DEFAULT_API_VERSION = "2.0"
+DEFAULT_MAJOR_OS_COMPUTE_API_VERSION = "2.0"
 
 logger = logging.getLogger(__name__)
 
@@ -34,11 +37,12 @@ class HarborClientArgumentParser(argparse.ArgumentParser):
         # FIXME(lzyeval): if changes occur in argparse.ArgParser._check_value
         choose_from = ' (choose from'
         progparts = self.prog.partition(' ')
-        self.exit(2, _("error: %(errmsg)s\nTry '%(mainp)s help %(subp)s'"
-                       " for more information.\n") %
-                  {'errmsg': message.split(choose_from)[0],
-                   'mainp': progparts[0],
-                   'subp': progparts[2]})
+        self.exit(2,
+                  _("error: %(errmsg)s\nTry '%(mainp)s help %(subp)s'"
+                    " for more information.\n") % {
+                        'errmsg': message.split(choose_from)[0],
+                        'mainp': progparts[0],
+                        'subp': progparts[2]})
 
     def _get_option_tuples(self, option_string):
         """returns (action, option, value) candidates for an option prefix
@@ -49,8 +53,10 @@ class HarborClientArgumentParser(argparse.ArgumentParser):
         option_tuples = (super(HarborClientArgumentParser, self)
                          ._get_option_tuples(option_string))
         if len(option_tuples) > 1:
-            normalizeds = [option.replace('_', '-')
-                           for action, option, value in option_tuples]
+            normalizeds = [
+                option.replace('_', '-')
+                for action, option, value in option_tuples
+            ]
             if len(set(normalizeds)) == 1:
                 return option_tuples[:1]
         return option_tuples
@@ -121,8 +127,8 @@ class HarborShell(object):
         parser.add_argument(
             '--os-api-version',
             metavar='<api-version>',
-            default=utils.env('HARBOR_API_VERSION',
-                              default=DEFAULT_API_VERSION),
+            default=utils.env(
+                'HARBOR_API_VERSION', default=DEFAULT_API_VERSION),
             help=_('Accepts X, X.Y (where X is major and Y is minor part) or '
                    '"X.latest", defaults to env[HARBOR_API_VERSION].'))
 
@@ -136,8 +142,8 @@ class HarborShell(object):
         self.subcommands = {}
         subparsers = parser.add_subparsers(metavar='<subcommand>')
 
-        actions_module = importutils.import_module("harborclient.v%s.shell" %
-                                                   version.ver_major)
+        actions_module = importutils.import_module(
+            "harborclient.v%s.shell" % version.ver_major)
 
         self._find_actions(subparsers, actions_module, version, do_help)
         self._find_actions(subparsers, self, version, do_help)
@@ -169,11 +175,11 @@ class HarborShell(object):
                         'start': subs[0].start_version.get_string(),
                         'end': subs[-1].end_version.get_string()
                     }
-                    if version.is_latest():
-                        additional_msg += HINT_HELP_MSG
-                subs = [versioned_method for versioned_method in subs
-                        if version.matches(versioned_method.start_version,
-                                           versioned_method.end_version)]
+                subs = [
+                    versioned_method for versioned_method in subs
+                    if version.matches(versioned_method.start_version,
+                                       versioned_method.end_version)
+                ]
                 if subs:
                     # use the "latest" substitution
                     callback = subs[-1].func
@@ -209,10 +215,11 @@ class HarborShell(object):
                         end_version = api_versions.APIVersion(
                             "%s.latest" % start_version.ver_major)
                     if do_help:
-                        kwargs["help"] = kwargs.get("help", "") + (msg % {
-                            "start": start_version.get_string(),
-                            "end": end_version.get_string()
-                        })
+                        kwargs["help"] = kwargs.get("help", "") + (
+                            msg % {
+                                "start": start_version.get_string(),
+                                "end": end_version.get_string()
+                            })
                     if not version.matches(start_version, end_version):
                         continue
                 kw = kwargs.copy()
@@ -233,8 +240,8 @@ class HarborShell(object):
         parser = self.get_base_parser(argv)
         (args, args_list) = parser.parse_known_args(argv)
         self.setup_debugging(args.debug)
-        do_help = ('help' in argv) or (
-            '--help' in argv) or ('-h' in argv) or not argv
+        do_help = ('help' in argv) or ('--help' in argv) or (
+            '-h' in argv) or not argv
 
         # bash-completion should not require authentication
         if not args.os_api_version:
@@ -284,15 +291,17 @@ class HarborShell(object):
         except exc.Unauthorized:
             raise exc.CommandError(_("Invalid Harbor credentials."))
         except exc.AuthorizationFailure as e:
-            raise exc.CommandError(
-                _("Unable to authorize user '%s':%s" % (os_username, e)))
+            raise exc.CommandError("Unable to authorize user '%s':%s"
+                                   % (os_username, e))
         args.func(self.cs, args)
         if args.timings:
             self._dump_timings(self.times + self.cs.get_timings())
 
     def _dump_timings(self, timings):
-        results = [{"url": url,
-                    "seconds": end - start} for url, start, end in timings]
+        results = [{
+            "url": url,
+            "seconds": end - start
+        } for url, start, end in timings]
         total = 0.0
         for tyme in results:
             total += tyme['seconds']
@@ -301,7 +310,8 @@ class HarborShell(object):
         print("Total: %s seconds" % total)
 
     def do_bash_completion(self, _args):
-        """
+        """Print bash completion
+
         Prints all of the commands and options to stdout so that the
         harbor.bash_completion script doesn't have to hard code them.
         """
@@ -316,14 +326,13 @@ class HarborShell(object):
         commands.remove('bash_completion')
         print(' '.join(commands | options))
 
-    @utils.arg('command',
-               metavar='<subcommand>',
-               nargs='?',
-               help=_('Display help for <subcommand>.'))
+    @utils.arg(
+        'command',
+        metavar='<subcommand>',
+        nargs='?',
+        help=_('Display help for <subcommand>.'))
     def do_help(self, args):
-        """
-        Display help about this program or one of its subcommands.
-        """
+        """Display help about this program or one of its subcommands."""
         if args.command:
             if args.command in self.subcommands:
                 self.subcommands[args.command].print_help()

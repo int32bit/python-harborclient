@@ -1,10 +1,10 @@
 from harborclient import client
-from harborclient.v2 import users
+from harborclient.v2 import logs
 from harborclient.v2 import projects
 from harborclient.v2 import repositories
 from harborclient.v2 import searcher
 from harborclient.v2 import statistics
-from harborclient.v2 import logs
+from harborclient.v2 import users
 
 
 class Client(object):
@@ -28,7 +28,6 @@ class Client(object):
         """
         self.baseurl = baseurl
         self.users = users.UserManager(self)
-        #self.images = images.ImageManager(self)
         self.projects = projects.ProjectManager(self)
         self.repositories = repositories.RepositoryManager(self)
         self.searcher = searcher.SearchManager(self)

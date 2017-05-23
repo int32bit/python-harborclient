@@ -6,7 +6,6 @@ import requests
 
 from harborclient import base
 from harborclient import exceptions as exp
-from harborclient.i18n import _
 
 
 class UserManager(base.Manager):
@@ -14,8 +13,7 @@ class UserManager(base.Manager):
         return key.isdigit()
 
     def get(self, id):
-        """
-        Get a user.
+        """Get a user.
 
         :param id: ID of the :class:`User` to get.
         :rtype: :class:`User`
@@ -23,11 +21,9 @@ class UserManager(base.Manager):
         return self._get("/users/%s" % id)
 
     def list(self):
-        """
-        Get a list of users.
+        """Get a list of users.
 
         :rtype: list of :class:`User`
-
         """
         return self._list("/users")
 
@@ -49,10 +45,9 @@ class UserManager(base.Manager):
         return self._create("/users", data)
 
     def delete(self, id):
-        """
-        Delete (i.e. shut down and delete the image) this server.
+        """Delete this user.
 
-        :param server: The :class:`Server` (or its ID) to delete
+        :param user: The :class:`User` (or its ID) to delete
         :returns: An instance of harborclient.base.TupleWithMeta
         """
         return self._delete("/users/%s" % id)

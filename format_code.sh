@@ -1,3 +1,3 @@
 #!/bin/bash
-set -x
-find ./ -name "*.py" |xargs yapf -i
+
+yapf --style pep8 --recursive -i harborclient
