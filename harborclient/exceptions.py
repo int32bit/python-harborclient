@@ -284,7 +284,6 @@ def from_response(response, body, url, method=None):
                 'retry-after' in response.headers):
             kwargs['retry_after'] = response.headers.get('retry-after')
 
-    print(body)
     if body:
         message = "n/a"
         details = "n/a"
