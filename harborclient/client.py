@@ -32,6 +32,8 @@ class HTTPClient(object):
                  timeout=None,
                  timings=False,
                  http_log_debug=False,
+                 cacert=None,
+                 insecure=False,
                  api_version=None):
         self.username = username
         self.password = password
@@ -44,6 +46,14 @@ class HTTPClient(object):
         else:
             self.timeout = None
 
+        # https
+        if insecure:
+            self.verify_cert = False
+        else:
+            if cacert:
+                self.verify_cert = cacert
+            else:
+                self.verify_cert = True
         self.times = []  # [("item", starttime, endtime), ...]
 
         self._logger = logging.getLogger(__name__)
@@ -66,7 +76,8 @@ class HTTPClient(object):
         """Forget all of our authentication information."""
         requests.get(
             '%s://%s/logout' % (self.protocol, self.host),
-            cookies={'beegosessionID': self.session_id})
+            cookies={'beegosessionID': self.session_id},
+            verify=self.verify_cert)
         logging.debug("Successfully logout")
 
     def get_timings(self):
@@ -117,8 +128,9 @@ class HTTPClient(object):
 
         string_parts = ['curl -g -i']
 
-        if not kwargs.get('verify', True):
-            string_parts.append(' --insecure')
+        if self.verify_cert is not None:
+            if not self.verify_cert:
+                string_parts.append(' --insecure')
 
         string_parts.append(" '%s'" % url)
         string_parts.append(' -X %s' % method)
@@ -168,13 +180,13 @@ class HTTPClient(object):
             kwargs['headers']['Content-Type'] = 'application/json'
             kwargs['data'] = json.dumps(kwargs['body'])
             del kwargs['body']
-        api_versions.update_headers(kwargs["headers"], self.api_version)
+        kwargs["headers"]['Harbor-API-Version'] = "v2"
         if self.timeout is not None:
             kwargs.setdefault('timeout', self.timeout)
 
         self.http_log_req(method, url, kwargs)
 
-        resp = requests.request(method, url, **kwargs)
+        resp = requests.request(method, url, verify=self.verify_cert, **kwargs)
         self.http_log_resp(resp)
 
         if resp.text:
@@ -263,7 +275,8 @@ class HTTPClient(object):
         resp = requests.post(
             self.baseurl + "/login",
             data={'principal': self.username,
-                  'password': self.password})
+                  'password': self.password},
+            verify=self.verify_cert)
         if resp.status_code == 200:
             self.session_id = resp.cookies.get('beegosessionID')
             logging.debug(
@@ -279,6 +292,8 @@ def _construct_http_client(username=None,
                            http_log_debug=False,
                            user_agent='python-harborclient',
                            api_version=None,
+                           insecure=False,
+                           cacert=None,
                            **kwargs):
     return HTTPClient(
         username,
@@ -287,6 +302,8 @@ def _construct_http_client(username=None,
         timeout=timeout,
         timings=timings,
         http_log_debug=http_log_debug,
+        insecure=insecure,
+        cacert=cacert,
         api_version=api_version)
 
 
@@ -315,6 +332,8 @@ def Client(version,
            username=None,
            password=None,
            baseurl=None,
+           insecure=False,
+           cacert=None,
            *args,
            **kwargs):
     """Initialize client object based on given version.
@@ -350,5 +369,7 @@ def Client(version,
         password=password,
         baseurl=baseurl,
         api_version=api_version,
+        insecure=insecure,
+        cacert=cacert,
         *args,
         **kwargs)

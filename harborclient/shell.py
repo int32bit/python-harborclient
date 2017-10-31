@@ -5,6 +5,7 @@ Command-line interface to the Harbor API.
 from __future__ import print_function
 import argparse
 import logging
+import os
 import sys
 
 from oslo_utils import encodeutils
@@ -123,6 +124,26 @@ class HarborShell(object):
             '--os-baseurl',
             metavar='<baseurl>',
             help=_('API base url'), )
+
+        parser.add_argument(
+            '--insecure',
+            default=False,
+            action='store_true',
+            dest='insecure',
+            help='Explicitly allow client to perform '
+            '"insecure" TLS (https) requests. The '
+            'server\'s certificate will not be verified '
+            'against any certificate authorities. This '
+            'option should be used with caution.')
+
+        parser.add_argument(
+            '--os-cacert',
+            dest='os_cacert',
+            metavar='<ca-certificate>',
+            default=os.environ.get('OS_CACERT'),
+            help='Specify a CA bundle file to use in '
+            'verifying a TLS (https) server certificate. '
+            'Defaults to env[OS_CACERT].')
 
         parser.add_argument(
             '--os-api-version',
@@ -276,6 +297,8 @@ class HarborShell(object):
         if hasattr(args, "username") and args.username:
             os_username = args.username
             os_password = args.password
+        insecure = args.insecure
+        cacert = args.os_cacert
         # Recreate client object with discovered version.
         self.cs = client.Client(
             api_version,
@@ -284,7 +307,9 @@ class HarborShell(object):
             os_baseurl,
             timings=args.timings,
             http_log_debug=args.debug,
-            timeout=args.timeout, )
+            insecure=insecure,
+            cacert=cacert,
+            timeout=args.timeout,)
 
         try:
             self.cs.authenticate()
@@ -363,15 +388,6 @@ def main():
     try:
         argv = [encodeutils.safe_decode(a) for a in sys.argv[1:]]
         HarborShell().main(argv)
-    except Exception as exc:
-        logger.debug(exc, exc_info=1)
-        print(
-            _("ERROR (%(type)s): %(msg)s") % {
-                'type': exc.__class__.__name__,
-                'msg': encodeutils.exception_to_unicode(exc)
-            },
-            file=sys.stderr)
-        sys.exit(1)
     except KeyboardInterrupt:
         print(_("... terminating harbor client"), file=sys.stderr)
         sys.exit(130)

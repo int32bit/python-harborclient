@@ -7,5 +7,4 @@ RUN set -ex \
         && cd /opt/harborclient \
         && python setup.py install \
         && rm -rf /opt/harborclient
-ENTRYPOINT ["harbor"]
-CMD ["help"]
+CMD ["harbor"]

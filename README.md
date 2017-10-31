@@ -96,7 +96,7 @@ $ docker run \
  -e HARBOR_USERNAME="admin" \
  -e HARBOR_PASSWORD="Harbor12345" \
  -e HARBOR_URL="http://192.168.56.4" \
- --net host --rm krystism/harborclient user-list
+ --net host --rm krystism/harborclient harbor user-list
 
 +---------+----------+----------------------+--------------+-------------+
 | user_id | username |        email         |   realname   |   comment   |
@@ -113,7 +113,7 @@ alias harbor='docker run \
  -e HARBOR_USERNAME="admin" \
  -e HARBOR_PASSWORD="Harbor12345" \
  -e HARBOR_URL="http://192.168.56.4" \
- --net host --rm krystism/harborclient'
+ --net host --rm krystism/harborclient harbor'
 ```
 
 Then run as a simpler way:

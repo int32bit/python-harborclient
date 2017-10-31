@@ -18,6 +18,8 @@ class Client(object):
                  username=None,
                  password=None,
                  baseurl=None,
+                 insecure=False,
+                 cacert=None,
                  api_version=None,
                  *argv,
                  **kwargs):
@@ -37,6 +39,8 @@ class Client(object):
             username=username,
             password=password,
             baseurl=baseurl,
+            insecure=insecure,
+            cacert=cacert,
             api_version=api_version,
             **kwargs)
 
