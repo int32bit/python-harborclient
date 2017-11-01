@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import logging
 
+from harborclient import exceptions as exp
 from harborclient.i18n import _
 from harborclient import utils
 
@@ -133,11 +134,15 @@ def do_project_show(cs, args):
     """Show details about the given project."""
     key = args.project
     if cs.projects.is_id(key):
-        id = key
+        project_id = key
     else:
-        id = cs.projects.get_id_by_name(key)
-    _, project = cs.projects.get(id)
-    utils.print_dict(project)
+        project_id = cs.projects.get_id_by_name(key)
+    _, projects = cs.projects.list()
+    for project in projects:
+        if str(project['project_id']) == str(project_id):
+            utils.print_dict(project)
+            return
+    raise exp.ProjectNotFound("Project '%s' not found" % args.project)
 
 
 @utils.arg('project', metavar='<project>', help=_('ID or name of project.'))
@@ -180,20 +185,19 @@ def do_list(cs, args):
     for repo in repositories:
         _, tags = cs.repositories.list_tags(repo['name'])
         for tag in tags:
-            item = {}
-            item['Id'] = repo['id']
-            item['Name'] = repo['name']
-            item['Tag'] = tag['name']
-            item['Project'] = args.project_id
-            item['Author'] = tag['author']
-            item['OS'] = tag['os']
-            item['Architecture'] = tag['architecture']
-            item['Docker Version'] = tag['docker_version']
-            item['Created'] = tag['created']
-            data.append(item)
+            _, manifest = cs.repositories.get_manifests(repo['name'],
+                                                        tag['name'])
+            size = 0
+            for layer in manifest['manifest']['layers']:
+                size += layer['size']
+            repo['size'] = size
+            if tag['name'] != 'latest':
+                repo['name'] = repo['name'] + ":" + tag['name']
+            data.append(repo)
     fields = [
-        "Id", "Name", "Tag", "Author", 'Project', "Docker Version",
-        "Architecture", "OS", "Created",
+        "id", "name", 'project_id', 'size',
+        "tags_count", "star_count", "pull_count",
+        "update_time"
     ]
     utils.print_list(data, fields, sortby=args.sortby)
 
@@ -208,31 +212,21 @@ def do_list_tags(cs, args):
 
 
 @utils.arg(
-    '--repository',
-    '-r',
-    metavar='<repository>',
-    dest='repository',
-    required=True,
-    help=_('Repository name'), )
-@utils.arg(
-    '--tag',
-    '-t',
-    metavar='<tag>',
-    dest='tag',
-    required=True,
-    help=_('Tag name'), )
-def do_get_repository_manifests(cs, args):
-    """Get manifests of a relevant repository. """
-    resp, data = cs.repositories.get_manifests(args.repository, args.tag)
-    utils.print_dict(data)
-
-
+    '--project-id',
+    '-p',
+    dest='project_id',
+    metavar='<project_id>',
+    default=None,
+    help=_('ID of project.'))
 @utils.arg(
     'repository',
     metavar='<repository>',
     help=_("Repository name, for example: int32bit/ubuntu:14.04."))
 def do_show(cs, args):
     """Show details about the given repository. """
+    project = args.project_id
+    if not project:
+        project = cs.client.project
     repo = args.repository
     tag_index = repo.find(':')
     if tag_index != -1:
@@ -242,8 +236,27 @@ def do_show(cs, args):
         tag = "latest"
     if repo.find('/') == -1:
         repo = "library/" + repo
-    _, data = cs.repositories.get_manifests(repo, tag)
-    utils.print_dict(data)
+    _, repos = cs.repositories.list(project)
+    found_repo = None
+    for r in repos:
+        if r['name'] == repo:
+            found_repo = r
+            break
+    if not found_repo:
+        print("Image '%s' not found." % repo)
+        return
+    _, tags = cs.repositories.list_tags(found_repo['name'])
+    found_tag = None
+    for t in tags:
+        if t['name'] == tag:
+            found_tag = t
+            break
+    if not found_tag:
+        print("Image '%s' with tag '%s' not found." % (repo, tag))
+        return
+    for key in found_tag:
+        found_repo['tag_' + key] = found_tag[key]
+    utils.print_dict(found_repo)
 
 
 @utils.arg(
@@ -256,7 +269,9 @@ def do_show(cs, args):
 def do_top(cs, args):
     """Get top accessed repositories. """
     resp, data = cs.repositories.get_top(args.count)
-    utils.print_list(data, ['name', 'count'], sortby='count')
+    utils.print_list(data,
+                     ['name', 'pull_count', 'star_count'],
+                     sortby='pull_count')
 
 
 # /search
@@ -284,15 +299,8 @@ def do_search(cs, args):
 
 
 # /statistics
-def do_statistics(cs, args):
+def do_info(cs, args):
     """Get statistics data. """
-    _, data = cs.statistics.list()
-    utils.print_dict(data)
-
-
-# /statistics
-def do_stat(cs, args):
-    """Aliased to 'statistics'. """
     _, data = cs.statistics.list()
     utils.print_dict(data)
 
@@ -315,5 +323,6 @@ def do_logs(cs, args):
         if tag:
             repo += ":%s" % tag
         log['repository'] = repo
-    fields = ['op_time', 'username', 'operation', 'repository']
+    fields = ['log_id', 'op_time', 'username',
+              'project_id', 'operation', 'repository']
     utils.print_list(logs, fields, sortby=args.sortby)

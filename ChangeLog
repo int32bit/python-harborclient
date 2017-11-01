@@ -1,3 +1,15 @@
 CHANGES
 =======
 
+* Add project to options
+* Raise error if fail to authorize
+* Add required options check
+* Add https support
+* Remove test code
+* Format code to pep8 style
+* Add todo list
+* Update README.md
+* Add Chinese doc
+* Update document
+* Add Docker support
+* init repo
