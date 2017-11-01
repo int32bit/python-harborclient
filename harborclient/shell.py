@@ -4,6 +4,7 @@ Command-line interface to the Harbor API.
 
 from __future__ import print_function
 import argparse
+import getpass
 import logging
 import os
 import sys
@@ -299,7 +300,15 @@ class HarborShell(object):
             os_password = args.password
         insecure = args.insecure
         cacert = args.os_cacert
-        # Recreate client object with discovered version.
+        if not os_baseurl:
+            print(("ERROR (CommandError): You must provide harbor url via "
+                   "either --os-baseurl or env[HARBOR_URL]."))
+            return 1
+            print(("ERROR (CommandError): You must provide username via "
+                   "either --os-username or env[HARBOR_USERNAME]."))
+            return 1
+        while not os_password:
+            os_password = getpass.getpass("password: ")
         self.cs = client.Client(
             api_version,
             os_username,
@@ -310,7 +319,6 @@ class HarborShell(object):
             insecure=insecure,
             cacert=cacert,
             timeout=args.timeout,)
-
         try:
             self.cs.authenticate()
         except exc.Unauthorized:
