@@ -95,6 +95,7 @@ Then run a docker instance as follows:
 $ docker run \
  -e HARBOR_USERNAME="admin" \
  -e HARBOR_PASSWORD="Harbor12345" \
+ -e HARBOR_PROJECT=1 \
  -e HARBOR_URL="http://192.168.56.4" \
  --net host --rm krystism/harborclient harbor user-list
 
