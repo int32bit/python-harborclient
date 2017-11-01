@@ -1,4 +1,5 @@
 from harborclient import base
+from harborclient import exceptions as exp
 
 
 class RepositoryManager(base.Manager):
@@ -10,22 +11,26 @@ class RepositoryManager(base.Manager):
         """
         return self._get("/repositories/%s" % id)
 
-    def list(self, project_id):
+    def list(self, project):
         """Get a list of users.
 
         :rtype: list of :class:`User`
 
         """
-        repositories = self._list("/repositories?project_id=%s" % project_id)
-        return repositories
+        try:
+            repositories = self._list("/repositories?project_id=%s" % project)
+            return repositories
+        except exp.NotFound as e:
+            raise exp.ProjectNotFound(e.message)
 
     def list_tags(self, repo_name):
         return self.api.client.get(
-            "/repositories/tags?repo_name=%s" % repo_name)
+            "/repositories/%s/tags" % repo_name)
 
     def get_manifests(self, repo_name, tag):
         return self.api.client.get(
-            "/repositories/manifests?repo_name=%s&tag=%s" % (repo_name, tag))
+            "/repositories/%(repo_name)s/tags/%(tag)s/manifest"
+            % {"repo_name": repo_name, "tag": tag})
 
     def create(self, username, password, email, realname=None, comment=None):
         data = {

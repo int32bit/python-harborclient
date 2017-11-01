@@ -269,49 +269,12 @@ def from_response(response, body, url, method=None):
             raise exception_from_response(resp, rest.text)
     """
     cls = _code_map.get(response.status_code, ClientException)
-
     kwargs = {
         'code': response.status_code,
         'method': method,
         'url': url,
-        'request_id': None,
+        'message': body.strip(),
     }
-
-    if response.headers:
-        kwargs['request_id'] = response.headers.get('x-compute-request-id')
-
-        if (issubclass(cls, RetryAfterException) and
-                'retry-after' in response.headers):
-            kwargs['retry_after'] = response.headers.get('retry-after')
-
-    if body:
-        message = "n/a"
-        details = "n/a"
-
-        if hasattr(body, 'keys'):
-            # NOTE(mriedem): WebOb<1.6.0 will return a nested dict structure
-            # where the error keys to the message/details/code. WebOb>=1.6.0
-            # returns just a response body as a single dict, not nested,
-            # so we have to handle both cases (since we can't trust what we're
-            # given with content_type: application/json either way.
-            if 'message' in body:
-                # WebOb 1.6.0 case
-                message = body.get('message')
-                details = body.get('details')
-            else:
-                # WebOb<1.6.0 where we assume there is a single error message
-                # key to the body that has the message and details.
-                error = body[list(body)[0]]
-                if isinstance(error, list):
-                    message = error[0].get('message')
-                    details = error[0].get('details')
-                else:
-                    message = error.get('message')
-                    details = error.get('details')
-
-        kwargs['message'] = message
-        kwargs['details'] = details
-
     return cls(**kwargs)
 
 

@@ -5,6 +5,7 @@ Harbor Client interface. Handles the REST calls and responses.
 import copy
 import hashlib
 import logging
+from urlparse import urlparse
 import warnings
 
 from oslo_utils import importutils
@@ -28,6 +29,7 @@ class HTTPClient(object):
     def __init__(self,
                  username,
                  password,
+                 project,
                  baseurl,
                  timeout=None,
                  timings=False,
@@ -37,15 +39,22 @@ class HTTPClient(object):
                  api_version=None):
         self.username = username
         self.password = password
+        self.project = project
         self.baseurl = baseurl
         self.api_version = api_version or api_versions.APIVersion()
         self.timings = timings
         self.http_log_debug = http_log_debug
+        # Has no protocol, use http
+        if not urlparse(baseurl).scheme:
+            self.baseurl = 'http://' + baseurl
+        parsed_url = urlparse(self.baseurl)
+        self.protocol = parsed_url.scheme
+        self.host = parsed_url.hostname
+        self.port = parsed_url.port
         if timeout is not None:
             self.timeout = float(timeout)
         else:
             self.timeout = None
-
         # https
         if insecure:
             self.verify_cert = False
@@ -188,30 +197,12 @@ class HTTPClient(object):
 
         resp = requests.request(method, url, verify=self.verify_cert, **kwargs)
         self.http_log_resp(resp)
-
-        if resp.text:
-            # TODO(dtroyer): verify the note below in a requests context
-            # NOTE(alaski): Because force_exceptions_to_status_code=True
-            # httplib2 returns a connection refused event as a 400 response.
-            # To determine if it is a bad request or refused connection we need
-            # to check the body.  httplib2 tests check for 'Connection refused'
-            # or 'actively refused' in the body, so that's what we'll do.
-            if resp.status_code == 400:
-                if ('Connection refused' in resp.text or
-                        'actively refused' in resp.text):
-                    raise exceptions.ConnectionRefused(resp.text)
-            try:
-                body = json.loads(resp.text)
-            except ValueError:
-                body = None
-        else:
-            body = None
-
-        self.last_request_id = (resp.headers.get('x-harbor-request-id')
-                                if resp.headers else None)
         if resp.status_code >= 400:
-            raise exceptions.from_response(resp, body, url, method)
-
+            raise exceptions.from_response(resp, resp.text, url, method)
+        try:
+            body = json.loads(resp.text)
+        except ValueError:
+            body = None
         return resp, body
 
     def _time_request(self, url, method, **kwargs):
@@ -290,6 +281,7 @@ class HTTPClient(object):
 
 def _construct_http_client(username=None,
                            password=None,
+                           project=None,
                            baseurl=None,
                            timeout=None,
                            extensions=None,
@@ -303,6 +295,7 @@ def _construct_http_client(username=None,
     return HTTPClient(
         username,
         password,
+        project,
         baseurl,
         timeout=timeout,
         timings=timings,
@@ -336,6 +329,7 @@ def get_client_class(version):
 def Client(version,
            username=None,
            password=None,
+           project=None,
            baseurl=None,
            insecure=False,
            cacert=None,
@@ -349,7 +343,7 @@ def Client(version,
 
         >>> from harborclient import client
         >>> harbor = client.Client(VERSION, USERNAME, PASSWORD,
-        ...                      PROJECT_ID, AUTH_URL)
+        ...                        PROJECT, HARBOR_URL)
 
     Here ``VERSION`` can be a string or
     ``harborclient.api_versions.APIVersion`` obj. If you prefer string value,
@@ -362,8 +356,8 @@ def Client(version,
     python-harborclient's doc.
     """
     if args:
-        warnings.warn("Only VERSION, USERNAME, PASSWORD, PROJECT_ID and "
-                      "AUTH_URL arguments can be specified as positional "
+        warnings.warn("Only VERSION, USERNAME, PASSWORD, PROJECT and "
+                      "HARBOR_URL arguments can be specified as positional "
                       "arguments. All other variables should be keyword "
                       "arguments. Note that this will become an error in "
                       "Ocata.")
@@ -372,6 +366,7 @@ def Client(version,
     return client_class(
         username=username,
         password=password,
+        project=project,
         baseurl=baseurl,
         api_version=api_version,
         insecure=insecure,

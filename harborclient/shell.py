@@ -71,6 +71,7 @@ class HarborShell(object):
         # Register the CLI arguments that have moved to the session object.
         parser.set_defaults(os_username=utils.env('HARBOR_USERNAME'))
         parser.set_defaults(os_password=utils.env('HARBOR_PASSWORD'))
+        parser.set_defaults(os_project=utils.env('HARBOR_PROJECT'))
         parser.set_defaults(os_baseurl=utils.env('HARBOR_URL'))
 
     def get_base_parser(self, argv):
@@ -115,6 +116,12 @@ class HarborShell(object):
             dest='os_password',
             metavar='<password>',
             help=_("User's password"), )
+
+        parser.add_argument(
+            '--os-project',
+            dest='os_project',
+            metavar='<project>',
+            help=_("Project Id"), )
 
         parser.add_argument(
             '--timeout',
@@ -274,8 +281,8 @@ class HarborShell(object):
 
         os_username = args.os_username
         os_password = args.os_password
+        os_project = args.os_project
         os_baseurl = args.os_baseurl
-
         subcommand_parser = self.get_subcommand_parser(
             api_version, do_help=do_help, argv=argv)
         self.parser = subcommand_parser
@@ -304,8 +311,13 @@ class HarborShell(object):
             print(("ERROR (CommandError): You must provide harbor url via "
                    "either --os-baseurl or env[HARBOR_URL]."))
             return 1
+        if not os_username:
             print(("ERROR (CommandError): You must provide username via "
                    "either --os-username or env[HARBOR_USERNAME]."))
+            return 1
+        if not os_project:
+            print(("ERROR (CommandError): You must provide project via "
+                   "either --os-project or env[HARBOR_PROJECT]."))
             return 1
         while not os_password:
             os_password = getpass.getpass("password: ")
@@ -313,18 +325,19 @@ class HarborShell(object):
             api_version,
             os_username,
             os_password,
+            os_project,
             os_baseurl,
             timings=args.timings,
             http_log_debug=args.debug,
             insecure=insecure,
             cacert=cacert,
-            timeout=args.timeout,)
+            timeout=args.timeout)
         try:
             self.cs.authenticate()
         except exc.Unauthorized:
             raise exc.CommandError(_("Invalid Harbor credentials."))
         except exc.AuthorizationFailure as e:
-            raise exc.CommandError("Unable to authorize user '%s':%s"
+            raise exc.CommandError("Unable to authorize user '%s': %s"
                                    % (os_username, e))
         args.func(self.cs, args)
         if args.timings:

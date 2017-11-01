@@ -17,6 +17,7 @@ class Client(object):
     def __init__(self,
                  username=None,
                  password=None,
+                 project=None,
                  baseurl=None,
                  insecure=False,
                  cacert=None,
@@ -27,6 +28,7 @@ class Client(object):
 
         :param str username: Username
         :param str password: Password
+        :param str project: Project
         """
         self.baseurl = baseurl
         self.users = users.UserManager(self)
@@ -38,6 +40,7 @@ class Client(object):
         self.client = client._construct_http_client(
             username=username,
             password=password,
+            project=project,
             baseurl=baseurl,
             insecure=insecure,
             cacert=cacert,

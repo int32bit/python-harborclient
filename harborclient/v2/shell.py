@@ -162,7 +162,7 @@ def do_project_update(cs, args):
     '-p',
     dest='project_id',
     metavar='<project_id>',
-    default=1,
+    default=None,
     help=_('ID of project.'))
 @utils.arg(
     '--sortby',
@@ -173,19 +173,27 @@ def do_project_update(cs, args):
 def do_list(cs, args):
     """Print a list of available 'repositories'."""
     data = []
-    _, repositories = cs.repositories.list(args.project_id)
+    project_id = args.project_id
+    if not project_id:
+        project_id = cs.client.project
+    _, repositories = cs.repositories.list(project_id)
     for repo in repositories:
-        _, tags = cs.repositories.list_tags(repo)
+        _, tags = cs.repositories.list_tags(repo['name'])
         for tag in tags:
-            _, manifests = cs.repositories.get_manifests(repo, tag)
-            manifests['Name'] = repo
-            manifests['Tag'] = tag
-            manifests['Project'] = args.project_id
-            manifests['Id'] = manifests['Id'][0:12]
-            data.append(manifests)
+            item = {}
+            item['Id'] = repo['id']
+            item['Name'] = repo['name']
+            item['Tag'] = tag['name']
+            item['Project'] = args.project_id
+            item['Author'] = tag['author']
+            item['OS'] = tag['os']
+            item['Architecture'] = tag['architecture']
+            item['Docker Version'] = tag['docker_version']
+            item['Created'] = tag['created']
+            data.append(item)
     fields = [
-        "Id", "Name", "Tag", "Author", 'Project', "Created", "Docker Version",
-        "Architecture", "OS"
+        "Id", "Name", "Tag", "Author", 'Project', "Docker Version",
+        "Architecture", "OS", "Created",
     ]
     utils.print_list(data, fields, sortby=args.sortby)
 
@@ -194,8 +202,9 @@ def do_list(cs, args):
 def do_list_tags(cs, args):
     """Get tags of a relevant repository."""
     resp, tags = cs.repositories.list_tags(args.repository)
-    tags = [{"Tag": t} for t in tags]
-    utils.print_list(tags, ["Tag"], sortby="Tag")
+    fields = ["name", 'author', 'architecture',
+              'os', 'docker_version', 'created']
+    utils.print_list(tags, fields, sortby="name")
 
 
 @utils.arg(
