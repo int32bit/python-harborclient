@@ -281,6 +281,11 @@ class HTTPClient(object):
             self.session_id = resp.cookies.get('beegosessionID')
             logging.debug(
                 "Successfully login, session id: %s" % self.session_id)
+        if resp.status_code >= 400:
+            msg = resp.text or ("The request you have made requires "
+                                "authentication. (HTTP 401)")
+            reason = '{"reason": "%s", "message": "%s"}' % (resp.reason, msg)
+            raise exceptions.AuthorizationFailure(reason)
 
 
 def _construct_http_client(username=None,
