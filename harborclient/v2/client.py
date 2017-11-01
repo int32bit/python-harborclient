@@ -1,9 +1,12 @@
 from harborclient import client
+from harborclient.v2 import configurations
 from harborclient.v2 import logs
 from harborclient.v2 import projects
 from harborclient.v2 import repositories
 from harborclient.v2 import searcher
 from harborclient.v2 import statistics
+from harborclient.v2 import systeminfo
+from harborclient.v2 import targets
 from harborclient.v2 import users
 
 
@@ -37,6 +40,9 @@ class Client(object):
         self.searcher = searcher.SearchManager(self)
         self.statistics = statistics.StatisticsManager(self)
         self.logs = logs.LogManager(self)
+        self.targets = targets.TargetManager(self)
+        self.systeminfo = systeminfo.SystemInfoManager(self)
+        self.configurations = configurations.ConfigurationManager(self)
         self.client = client._construct_http_client(
             username=username,
             password=password,

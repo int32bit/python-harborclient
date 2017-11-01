@@ -53,3 +53,6 @@ class ProjectManager(base.Manager):
         :returns: An instance of harborclient.base.TupleWithMeta
         """
         return self._delete("/projects/%s" % id)
+
+    def get_members(self, id):
+        return self._list("/projects/%s/members/" % id)

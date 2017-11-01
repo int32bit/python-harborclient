@@ -59,6 +59,21 @@ def do_user_show(cs, args):
 
 
 @utils.arg(
+    '--detail',
+    '-d',
+    dest="detail",
+    action="store_true",
+    help=_('show detail info.'))
+def do_whoami(cs, args):
+    """Get current user info."""
+    _, user = cs.users.current()
+    if args.detail:
+        utils.print_dict(user)
+    else:
+        print(user['username'])
+
+
+@utils.arg(
     '--username',
     metavar='<username>',
     dest='username',
@@ -127,6 +142,29 @@ def do_project_list(cs, args):
         'public',
     ]
     utils.print_list(projects, fields, formatters={}, sortby=args.sortby)
+
+
+# /projects/{project_id}/members/
+@utils.arg(
+    '--project-id',
+    '-p',
+    dest='project_id',
+    metavar='<project_id>',
+    default=None,
+    help=_('ID of project.'))
+def do_member_list(cs, args):
+    """Print a list of available 'projects'."""
+    project = args.project_id
+    if not project:
+        project = cs.client.project
+    _, members = cs.projects.get_members(project)
+    fields = [
+        'username',
+        'role_name',
+        'user_id',
+        'role_id',
+    ]
+    utils.print_list(members, fields, formatters={}, sortby='user_id')
 
 
 @utils.arg('project', metavar='<project>', help=_('ID or name of project.'))
@@ -300,7 +338,7 @@ def do_search(cs, args):
 
 
 # /statistics
-def do_info(cs, args):
+def do_usage(cs, args):
     """Get statistics data. """
     _, data = cs.statistics.list()
     utils.print_dict(data)
@@ -327,3 +365,41 @@ def do_logs(cs, args):
     fields = ['log_id', 'op_time', 'username',
               'project_id', 'operation', 'repository']
     utils.print_list(logs, fields, sortby=args.sortby)
+
+
+# /systeminfo
+def do_info(cs, args):
+    """Get general system info."""
+    _, info = cs.systeminfo.get()
+    _, volumes = cs.systeminfo.get_volumes()
+    info['disk_total'] = volumes['storage']['total']
+    info['disk_free'] = volumes['storage']['free']
+    utils.print_dict(info)
+
+
+# /systeminfo/getcert`
+def do_get_cert(cs, args):
+    """Get default root cert under OVA deployment."""
+    try:
+        _, certs = cs.systeminfo.get_cert()
+    except exp.NotFound:
+        print("No certificate found")
+
+
+def do_version(cs, args):
+    """Get harbor version."""
+    _, info = cs.systeminfo.get()
+    print(info['harbor_version'])
+
+
+def do_get_conf(cs, args):
+    """Get system configurations."""
+    _, configurations = cs.configurations.get()
+    data = []
+    for key in configurations:
+        item = {}
+        item['name'] = key
+        item['value'] = configurations[key]['value']
+        item['editable'] = configurations[key]['editable']
+        data.append(item)
+    utils.print_list(data, ['name', 'value', 'editable'], sortby='name')

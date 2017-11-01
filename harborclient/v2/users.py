@@ -20,6 +20,13 @@ class UserManager(base.Manager):
         """
         return self._get("/users/%s" % id)
 
+    def current(self):
+        """Get current user info.
+
+        :rtype: :class:`User`
+        """
+        return self._get("/users/current")
+
     def list(self):
         """Get a list of users.
 
