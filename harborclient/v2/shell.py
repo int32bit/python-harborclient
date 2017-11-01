@@ -177,25 +177,26 @@ def do_project_update(cs, args):
     help=_('Sort key.'))
 def do_list(cs, args):
     """Print a list of available 'repositories'."""
-    data = []
     project_id = args.project_id
     if not project_id:
         project_id = cs.client.project
     _, repositories = cs.repositories.list(project_id)
+    data = []
     for repo in repositories:
         _, tags = cs.repositories.list_tags(repo['name'])
         for tag in tags:
-            _, manifest = cs.repositories.get_manifests(repo['name'],
+            item = repo.copy()
+            _, manifest = cs.repositories.get_manifests(item['name'],
                                                         tag['name'])
             size = 0
             for layer in manifest['manifest']['layers']:
                 size += layer['size']
-            repo['size'] = size
+            item['size'] = size
             if tag['name'] != 'latest':
-                repo['name'] = repo['name'] + ":" + tag['name']
-            data.append(repo)
+                item['name'] = repo['name'] + ":" + tag['name']
+            data.append(item)
     fields = [
-        "id", "name", 'project_id', 'size',
+        "name", 'project_id', 'size',
         "tags_count", "star_count", "pull_count",
         "update_time"
     ]
