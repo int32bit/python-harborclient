@@ -224,7 +224,7 @@ def do_list(cs, args):
         for tag in tags:
             item = repo.copy()
             manifest = cs.repositories.get_manifests(item['name'],
-                                                        tag['name'])
+                                                     tag['name'])
             size = 0
             for layer in manifest['manifest']['layers']:
                 size += layer['size']
@@ -376,6 +376,7 @@ def do_get_cert(cs, args):
     """Get default root cert under OVA deployment."""
     try:
         certs = cs.systeminfo.get_cert()
+        print(certs)
     except exp.NotFound:
         print("No certificate found")
 
@@ -424,7 +425,7 @@ def do_target_ping(cs, args):
         print("target '%s' not found!" % args.target)
         return 1
     try:
-        result = cs.targets.ping(target)
+        cs.targets.ping(target)
         print("OK")
     except Exception as e:
         print("Can not ping target: %s" % e)
