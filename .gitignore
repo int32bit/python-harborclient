@@ -17,3 +17,5 @@ harborclient/versioninfo
 
 # Files created by releasenotes build
 releasenotes/build
+AUTHORS
+ChangeLog

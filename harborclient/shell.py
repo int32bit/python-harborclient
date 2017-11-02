@@ -299,11 +299,6 @@ class HarborShell(object):
         elif args.func == self.do_bash_completion:
             self.do_bash_completion(args)
             return 0
-
-        # Update username & password from subcommand if given
-        if hasattr(args, "username") and args.username:
-            os_username = args.username
-            os_password = args.password
         insecure = args.insecure
         cacert = args.os_cacert
         if not os_baseurl:
