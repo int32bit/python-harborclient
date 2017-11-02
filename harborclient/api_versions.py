@@ -5,10 +5,9 @@ import re
 
 import harborclient
 from harborclient import exceptions
-from harborclient.i18n import _
 
 LOG = logging.getLogger(__name__)
-_type_error_msg = _("'%(other)s' should be an instance of '%(cls)s'")
+_type_error_msg = "'%(other)s' should be an instance of '%(cls)s'"
 
 
 if not LOG.handlers:
@@ -47,9 +46,9 @@ class APIVersion(object):
                 else:
                     self.ver_minor = int(match.group(2))
             else:
-                msg = _("Invalid format of client version '%s'. "
-                        "Expected format 'X.Y', where X is a major part and Y "
-                        "is a minor part of version.") % version_str
+                msg = ("Invalid format of client version '%s'. "
+                       "Expected format 'X.Y', where X is a major part and Y "
+                       "is a minor part of version.") % version_str
                 raise exceptions.UnsupportedVersion(msg)
 
     def __str__(self):
@@ -124,7 +123,7 @@ class APIVersion(object):
         """
 
         if self.is_null():
-            raise ValueError(_("Null APIVersion doesn't support 'matches'."))
+            raise ValueError("Null APIVersion doesn't support 'matches'.")
         if max_version.is_null() and min_version.is_null():
             return True
         elif max_version.is_null():
@@ -141,8 +140,7 @@ class APIVersion(object):
         an APIVersion object results in the same version.
         """
         if self.is_null():
-            raise ValueError(
-                _("Null APIVersion cannot be converted to string."))
+            raise ValueError("Null APIVersion cannot be converted to string.")
         elif self.is_latest():
             return "%s.%s" % (self.ver_major, "latest")
         return "%s.%s" % (self.ver_major, self.ver_minor)
@@ -194,15 +192,15 @@ def check_major_version(api_version):
     if (not api_version.is_null() and
             str(api_version.ver_major) not in available_versions):
         if len(available_versions) == 1:
-            msg = _("Invalid client version '%(version)s'. "
-                    "Major part should be '%(major)s'") % {
-                        "version": api_version.get_string(),
-                        "major": available_versions[0]}
+            msg = ("Invalid client version '%(version)s'. "
+                   "Major part should be '%(major)s'") % {
+                       "version": api_version.get_string(),
+                       "major": available_versions[0]}
         else:
-            msg = _("Invalid client version '%(version)s'. "
-                    "Major part must be one of: '%(major)s'") % {
-                        "version": api_version.get_string(),
-                        "major": ", ".join(available_versions)}
+            msg = ("Invalid client version '%(version)s'. "
+                   "Major part must be one of: '%(major)s'") % {
+                       "version": api_version.get_string(),
+                       "major": ", ".join(available_versions)}
         raise exceptions.UnsupportedVersion(msg)
 
 
@@ -240,36 +238,36 @@ def discover_version(client, requested_version):
             requested_version != APIVersion('2.0')):
         if server_start_version.is_null() and server_end_version.is_null():
             raise exceptions.UnsupportedVersion(
-                _("Server doesn't support microversions"))
+                ("Server doesn't support microversions"))
         if not requested_version.matches(server_start_version,
                                          server_end_version):
             raise exceptions.UnsupportedVersion(
-                _("The specified version isn't supported by server. The valid "
-                  "version range is '%(min)s' to '%(max)s'") % {
-                      "min": server_start_version.get_string(),
-                      "max": server_end_version.get_string()})
+                ("The specified version isn't supported by server. The valid "
+                 "version range is '%(min)s' to '%(max)s'") % {
+                     "min": server_start_version.get_string(),
+                     "max": server_end_version.get_string()})
         return requested_version
 
     if server_start_version.is_null() and server_end_version.is_null():
         return APIVersion('2.0')
     elif harborclient.API_MIN_VERSION > server_end_version:
         raise exceptions.UnsupportedVersion(
-            _("Server version is too old. The client valid version range is "
-              "'%(client_min)s' to '%(client_max)s'. The server valid version "
-              "range is '%(server_min)s' to '%(server_max)s'.") % {
-                  'client_min': harborclient.API_MIN_VERSION.get_string(),
-                  'client_max': harborclient.API_MAX_VERSION.get_string(),
-                  'server_min': server_start_version.get_string(),
-                  'server_max': server_end_version.get_string()})
+            ("Server version is too old. The client valid version range is "
+             "'%(client_min)s' to '%(client_max)s'. The server valid version "
+             "range is '%(server_min)s' to '%(server_max)s'.") % {
+                 'client_min': harborclient.API_MIN_VERSION.get_string(),
+                 'client_max': harborclient.API_MAX_VERSION.get_string(),
+                 'server_min': server_start_version.get_string(),
+                 'server_max': server_end_version.get_string()})
     elif harborclient.API_MAX_VERSION < server_start_version:
         raise exceptions.UnsupportedVersion(
-            _("Server version is too new. The client valid version range is "
-              "'%(client_min)s' to '%(client_max)s'. The server valid version "
-              "range is '%(server_min)s' to '%(server_max)s'.") % {
-                  'client_min': harborclient.API_MIN_VERSION.get_string(),
-                  'client_max': harborclient.API_MAX_VERSION.get_string(),
-                  'server_min': server_start_version.get_string(),
-                  'server_max': server_end_version.get_string()})
+            ("Server version is too new. The client valid version range is "
+             "'%(client_min)s' to '%(client_max)s'. The server valid version "
+             "range is '%(server_min)s' to '%(server_max)s'.") % {
+                 'client_min': harborclient.API_MIN_VERSION.get_string(),
+                 'client_max': harborclient.API_MAX_VERSION.get_string(),
+                 'server_min': server_start_version.get_string(),
+                 'server_max': server_end_version.get_string()})
     elif harborclient.API_MAX_VERSION <= server_end_version:
         return harborclient.API_MAX_VERSION
     elif server_end_version < harborclient.API_MAX_VERSION:

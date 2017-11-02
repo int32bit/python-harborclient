@@ -3,7 +3,6 @@ from __future__ import print_function
 import logging
 
 from harborclient import exceptions as exp
-from harborclient.i18n import _
 from harborclient import utils
 
 logger = logging.getLogger(__name__)
@@ -22,13 +21,13 @@ def is_id(obj):
     metavar='<username>',
     dest='username',
     required=True,
-    help=_('Username.'), )
+    help='Username.')
 @utils.arg(
     '--password',
     metavar='<password>',
     dest='password',
     required=True,
-    help=_('Password.'), )
+    help='Password.')
 def do_login(cs, args):
     """Login and return the session id. """
     resp = cs.users.login(args.username, args.password, cs.baseurl)
@@ -44,7 +43,7 @@ def do_login(cs, args):
     metavar='<sortby>',
     dest="sortby",
     default="user_id",
-    help=_('Sort key.'))
+    help='Sort key.')
 def do_user_list(cs, args):
     """Print a list of available 'users'."""
     _, users = cs.users.list()
@@ -52,7 +51,7 @@ def do_user_list(cs, args):
     utils.print_list(users, fields, sortby=args.sortby)
 
 
-@utils.arg('user', metavar='<user>', help=_('ID or name of user.'))
+@utils.arg('user', metavar='<user>', help='ID or name of user.')
 def do_user_show(cs, args):
     """Show details about the given user."""
     key = args.user
@@ -69,7 +68,7 @@ def do_user_show(cs, args):
     '-d',
     dest="detail",
     action="store_true",
-    help=_('show detail info.'))
+    help='show detail info.')
 def do_whoami(cs, args):
     """Get current user info."""
     _, user = cs.users.current()
@@ -84,31 +83,31 @@ def do_whoami(cs, args):
     metavar='<username>',
     dest='username',
     required=True,
-    help=_('Unique name of the new user'), )
+    help='Unique name of the new user')
 @utils.arg(
     '--password',
     metavar='<password>',
     dest='password',
     required=True,
-    help=_('Password of the new user'), )
+    help='Password of the new user')
 @utils.arg(
     '--email',
     metavar='<email>',
     dest='email',
     required=True,
-    help=_('Email of the new user'), )
+    help='Email of the new user')
 @utils.arg(
     '--realname',
     metavar='<realname>',
     dest='realname',
     default=None,
-    help=_('Email of the new user'), )
+    help='Email of the new user')
 @utils.arg(
     '--comment',
     metavar='<comment>',
     dest='comment',
     default=None,
-    help=_('Comment of the new user'), )
+    help='Comment of the new user')
 def do_user_create(cs, args):
     """Create a new User. """
     cs.users.create(args.username, args.password, args.email, args.realname,
@@ -116,7 +115,7 @@ def do_user_create(cs, args):
     print("Create user '%s' successfully." % args.username)
 
 
-@utils.arg('user', metavar='<user>', help=_('ID or name of user.'))
+@utils.arg('user', metavar='<user>', help='ID or name of user.')
 def do_user_delete(cs, args):
     """Delete an user """
     key = args.user
@@ -133,7 +132,7 @@ def do_user_delete(cs, args):
     metavar='<sortby>',
     dest="sortby",
     default="project_id",
-    help=_('Sort key.'))
+    help='Sort key.')
 def do_project_list(cs, args):
     """Print a list of available 'projects'."""
     _, projects = cs.projects.list()
@@ -155,7 +154,7 @@ def do_project_list(cs, args):
     dest='project_id',
     metavar='<project_id>',
     default=None,
-    help=_('ID of project.'))
+    help='ID of project.')
 def do_member_list(cs, args):
     """Print a list of available 'projects'."""
     project = args.project_id
@@ -171,7 +170,7 @@ def do_member_list(cs, args):
     utils.print_list(members, fields, formatters={}, sortby='user_id')
 
 
-@utils.arg('project', metavar='<project>', help=_('ID or name of project.'))
+@utils.arg('project', metavar='<project>', help='ID or name of project.')
 def do_project_show(cs, args):
     """Show details about the given project."""
     key = args.project
@@ -187,7 +186,7 @@ def do_project_show(cs, args):
     raise exp.ProjectNotFound("Project '%s' not found" % args.project)
 
 
-@utils.arg('project', metavar='<project>', help=_('ID or name of project.'))
+@utils.arg('project', metavar='<project>', help='ID or name of project.')
 def do_project_delete(cs, args):
     """Delete the given project."""
     key = args.project
@@ -205,13 +204,13 @@ def do_project_delete(cs, args):
     dest='project_id',
     metavar='<project_id>',
     default=None,
-    help=_('ID of project.'))
+    help='ID of project.')
 @utils.arg(
     '--sortby',
     dest='sortby',
     metavar='<sortby>',
     default='Id',
-    help=_('Sort key.'))
+    help='Sort key.')
 def do_list(cs, args):
     """Print a list of available 'repositories'."""
     project_id = args.project_id
@@ -240,7 +239,7 @@ def do_list(cs, args):
     utils.print_list(data, fields, sortby=args.sortby)
 
 
-@utils.arg('repository', metavar='<repository>', help=_('Name of repository.'))
+@utils.arg('repository', metavar='<repository>', help='Name of repository.')
 def do_list_tags(cs, args):
     """Get tags of a relevant repository."""
     resp, tags = cs.repositories.list_tags(args.repository)
@@ -255,11 +254,11 @@ def do_list_tags(cs, args):
     dest='project_id',
     metavar='<project_id>',
     default=None,
-    help=_('ID of project.'))
+    help='ID of project.')
 @utils.arg(
     'repository',
     metavar='<repository>',
-    help=_("Repository name, for example: int32bit/ubuntu:14.04."))
+    help="Repository name, for example: int32bit/ubuntu:14.04.")
 def do_show(cs, args):
     """Show details about the given repository. """
     project = args.project_id
@@ -303,7 +302,7 @@ def do_show(cs, args):
     metavar='<count>',
     dest='count',
     default=5,
-    help=_('Count.'), )
+    help='Count.')
 def do_top(cs, args):
     """Get top accessed repositories. """
     resp, data = cs.repositories.get_top(args.count)
@@ -315,7 +314,7 @@ def do_top(cs, args):
 @utils.arg(
     'query',
     metavar='<query>',
-    help=_('Search parameter for project and repository name..'))
+    help='Search parameter for project and repository name.')
 def do_search(cs, args):
     """Search for projects and repositories """
     resp, data = cs.searcher.search(args.query)
@@ -346,7 +345,7 @@ def do_usage(cs, args):
     dest='sortby',
     metavar='<sortby>',
     default='op_time',
-    help=_('Sort key.'))
+    help='Sort key.')
 def do_logs(cs, args):
     """Get logs. """
     _, logs = cs.logs.list()
@@ -409,7 +408,7 @@ def do_target_list(cs, args):
 @utils.arg(
     'target',
     metavar='<taregt>',
-    help=_("The target name or id."))
+    help="The target name or id.")
 def do_target_ping(cs, args):
     target = None
     if is_id(args.target):
@@ -436,7 +435,7 @@ def do_target_ping(cs, args):
 @utils.arg(
     'target',
     metavar='<target>',
-    help=_("The target name or id."))
+    help="The target name or id.")
 def do_policy_list(cs, args):
     target = None
     if is_id(args.target):
@@ -466,7 +465,7 @@ def do_policy_list(cs, args):
 @utils.arg(
     'policy_id',
     metavar='<policy_id>',
-    help=_("The policy id."))
+    help="The policy id.")
 def do_job_list(cs, args):
     _, jobs = cs.jobs.list(args.policy_id)
     for job in jobs:
@@ -479,7 +478,7 @@ def do_job_list(cs, args):
 @utils.arg(
     'job_id',
     metavar='<job_id>',
-    help=_("The job id."))
+    help="The job id.")
 def do_job_log(cs, args):
     _, log = cs.jobs.get_log(args.job_id)
     print(log)

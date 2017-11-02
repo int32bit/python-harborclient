@@ -16,7 +16,6 @@ import harborclient
 from harborclient import api_versions
 from harborclient import client
 from harborclient import exceptions as exc
-from harborclient.i18n import _
 from harborclient import utils
 
 DEFAULT_API_VERSION = "2.0"
@@ -40,11 +39,11 @@ class HarborClientArgumentParser(argparse.ArgumentParser):
         choose_from = ' (choose from'
         progparts = self.prog.partition(' ')
         self.exit(2,
-                  _("error: %(errmsg)s\nTry '%(mainp)s help %(subp)s'"
-                    " for more information.\n") % {
-                        'errmsg': message.split(choose_from)[0],
-                        'mainp': progparts[0],
-                        'subp': progparts[2]})
+                  ("error: %(errmsg)s\nTry '%(mainp)s help %(subp)s'"
+                   " for more information.\n") % {
+                       'errmsg': message.split(choose_from)[0],
+                       'mainp': progparts[0],
+                       'subp': progparts[2]})
 
     def _get_option_tuples(self, option_string):
         """returns (action, option, value) candidates for an option prefix
@@ -94,13 +93,13 @@ class HarborShell(object):
             '--debug',
             default=False,
             action='store_true',
-            help=_("Print debugging output."))
+            help="Print debugging output.")
 
         parser.add_argument(
             '--timings',
             default=False,
             action='store_true',
-            help=_("Print call timing info."))
+            help="Print call timing info.")
 
         parser.add_argument(
             '--version', action='version', version=harborclient.__version__)
@@ -109,29 +108,29 @@ class HarborShell(object):
             '--os-username',
             dest='os_username',
             metavar='<username>',
-            help=_('Username'), )
+            help='Username')
 
         parser.add_argument(
             '--os-password',
             dest='os_password',
             metavar='<password>',
-            help=_("User's password"), )
+            help="User's password")
 
         parser.add_argument(
             '--os-project',
             dest='os_project',
             metavar='<project>',
-            help=_("Project Id"), )
+            help="Project Id")
 
         parser.add_argument(
             '--timeout',
             metavar='<timeout>',
-            help=_("Set request timeout (in seconds)."), )
+            help="Set request timeout (in seconds).")
 
         parser.add_argument(
             '--os-baseurl',
             metavar='<baseurl>',
-            help=_('API base url'), )
+            help='API base url')
 
         parser.add_argument(
             '--insecure',
@@ -158,8 +157,8 @@ class HarborShell(object):
             metavar='<api-version>',
             default=utils.env(
                 'HARBOR_API_VERSION', default=DEFAULT_API_VERSION),
-            help=_('Accepts X, X.Y (where X is major and Y is minor part) or '
-                   '"X.latest", defaults to env[HARBOR_API_VERSION].'))
+            help=('Accepts X, X.Y (where X is major and Y is minor part) or '
+                  '"X.latest", defaults to env[HARBOR_API_VERSION].'))
 
         self._append_global_identity_args(parser, argv)
 
@@ -189,7 +188,7 @@ class HarborShell(object):
         subparser.set_defaults(func=self.do_bash_completion)
 
     def _find_actions(self, subparsers, actions_module, version, do_help):
-        msg = _(" (Supported by API versions '%(start)s' - '%(end)s')")
+        msg = " (Supported by API versions '%(start)s' - '%(end)s')"
         for attr in (a for a in dir(actions_module) if a.startswith('do_')):
             # I prefer to be hyphen-separated instead of underscores.
             command = attr[3:].replace('_', '-')
@@ -335,7 +334,7 @@ class HarborShell(object):
         try:
             self.cs.authenticate()
         except exc.Unauthorized:
-            raise exc.CommandError(_("Invalid Harbor credentials."))
+            raise exc.CommandError("Invalid Harbor credentials.")
         except exc.AuthorizationFailure as e:
             raise exc.CommandError("Unable to authorize user '%s': %s"
                                    % (os_username, e))
@@ -376,7 +375,7 @@ class HarborShell(object):
         'command',
         metavar='<subcommand>',
         nargs='?',
-        help=_('Display help for <subcommand>.'))
+        help='Display help for <subcommand>.')
     def do_help(self, args):
         """Display help about this program or one of its subcommands."""
         if args.command:
@@ -384,7 +383,7 @@ class HarborShell(object):
                 self.subcommands[args.command].print_help()
             else:
                 raise exc.CommandError(
-                    _("'%s' is not a valid subcommand") % args.command)
+                    ("'%s' is not a valid subcommand") % args.command)
         else:
             self.parser.print_help()
 

@@ -6,7 +6,6 @@ import copy
 import hashlib
 import logging
 from urlparse import urlparse
-import warnings
 
 from oslo_utils import importutils
 import requests
@@ -18,8 +17,6 @@ except ImportError:
 
 from harborclient import api_versions
 from harborclient import exceptions
-from harborclient.i18n import _
-from harborclient.i18n import _LW
 from harborclient import utils
 
 
@@ -249,18 +246,18 @@ class HTTPClient(object):
 
     def authenticate(self):
         if not self.baseurl:
-            msg = _("Authentication requires 'baseurl', which should be "
-                    "specified in '%s'") % self.__class__.__name__
+            msg = ("Authentication requires 'baseurl', which should be "
+                   "specified in '%s'") % self.__class__.__name__
             raise exceptions.AuthorizationFailure(msg)
 
         if not self.username:
-            msg = _("Authentication requires 'username', which should be "
-                    "specified in '%s'") % self.__class__.__name__
+            msg = ("Authentication requires 'username', which should be "
+                   "specified in '%s'") % self.__class__.__name__
             raise exceptions.AuthorizationFailure(msg)
 
         if not self.password:
-            msg = _("Authentication requires 'password', which should be "
-                    "specified in '%s'") % self.__class__.__name__
+            msg = ("Authentication requires 'password', which should be "
+                   "specified in '%s'") % self.__class__.__name__
             raise exceptions.AuthorizationFailure(msg)
 
         resp = requests.post(
@@ -311,17 +308,14 @@ def _get_client_class_and_version(version):
     else:
         api_versions.check_major_version(version)
     if version.is_latest():
-        raise exceptions.UnsupportedVersion(
-            _("The version should be explicit, not latest."))
+        raise exceptions.UnsupportedVersion(("The version should be explicit, "
+                                             "not latest."))
     return version, importutils.import_class(
         "harborclient.v%s.client.Client" % version.ver_major)
 
 
 def get_client_class(version):
     """Returns Client class based on given version."""
-    warnings.warn(
-        _LW("'get_client_class' is deprecated. "
-            "Please use `harborclient.client.Client` instead."))
     _api_version, client_class = _get_client_class_and_version(version)
     return client_class
 
@@ -355,12 +349,6 @@ def Client(version,
     session API. See "The harborclient Python API" page at
     python-harborclient's doc.
     """
-    if args:
-        warnings.warn("Only VERSION, USERNAME, PASSWORD, PROJECT and "
-                      "HARBOR_URL arguments can be specified as positional "
-                      "arguments. All other variables should be keyword "
-                      "arguments. Note that this will become an error in "
-                      "Ocata.")
     api_version, client_class = _get_client_class_and_version(version)
     kwargs.pop("direct_use", None)
     return client_class(
