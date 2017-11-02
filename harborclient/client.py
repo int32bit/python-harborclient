@@ -202,7 +202,7 @@ class HTTPClient(object):
         try:
             body = json.loads(resp.text)
         except ValueError:
-            body = None
+            body = resp.text
         return resp, body
 
     def _time_request(self, url, method, **kwargs):

@@ -1,5 +1,6 @@
 from harborclient import client
 from harborclient.v2 import configurations
+from harborclient.v2 import jobs
 from harborclient.v2 import logs
 from harborclient.v2 import projects
 from harborclient.v2 import repositories
@@ -36,6 +37,7 @@ class Client(object):
         self.baseurl = baseurl
         self.users = users.UserManager(self)
         self.projects = projects.ProjectManager(self)
+        self.jobs = jobs.JobManager(self)
         self.repositories = repositories.RepositoryManager(self)
         self.searcher = searcher.SearchManager(self)
         self.statistics = statistics.StatisticsManager(self)

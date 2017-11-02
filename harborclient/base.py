@@ -31,7 +31,7 @@ class Manager(object):
     def _get(self, url):
         return self.api.client.get(url)
 
-    def _create(self, url, body, **kwargs):
+    def _create(self, url, body=None, **kwargs):
         return self.api.client.post(url, body=body)
 
     def _delete(self, url):

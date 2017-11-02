@@ -9,7 +9,14 @@ from harborclient import utils
 logger = logging.getLogger(__name__)
 
 
-# /login
+def is_id(obj):
+    try:
+        int(obj)
+        return True
+    except ValueError:
+        return False
+
+
 @utils.arg(
     '--username',
     metavar='<username>',
@@ -38,7 +45,6 @@ def do_login(cs, args):
     dest="sortby",
     default="user_id",
     help=_('Sort key.'))
-# /users
 def do_user_list(cs, args):
     """Print a list of available 'users'."""
     _, users = cs.users.list()
@@ -122,7 +128,6 @@ def do_user_delete(cs, args):
     print("Delete user '%s' sucessfully." % key)
 
 
-# /projects
 @utils.arg(
     '--sortby',
     metavar='<sortby>',
@@ -144,7 +149,6 @@ def do_project_list(cs, args):
     utils.print_list(projects, fields, formatters={}, sortby=args.sortby)
 
 
-# /projects/{project_id}/members/
 @utils.arg(
     '--project-id',
     '-p',
@@ -193,11 +197,6 @@ def do_project_delete(cs, args):
         id = cs.projects.get_id_by_name(key)
     cs.projects.delete(id)
     print("Delete Project '%s' successfully." % key)
-
-
-def do_project_update(cs, args):
-    """Update the given project. """
-    raise NotImplementedError
 
 
 @utils.arg(
@@ -313,7 +312,6 @@ def do_top(cs, args):
                      sortby='pull_count')
 
 
-# /search
 @utils.arg(
     'query',
     metavar='<query>',
@@ -337,14 +335,12 @@ def do_search(cs, args):
         sortby='repository_name')
 
 
-# /statistics
 def do_usage(cs, args):
     """Get statistics data. """
     _, data = cs.statistics.list()
     utils.print_dict(data)
 
 
-# /logs
 @utils.arg(
     '--sortby',
     dest='sortby',
@@ -367,7 +363,6 @@ def do_logs(cs, args):
     utils.print_list(logs, fields, sortby=args.sortby)
 
 
-# /systeminfo
 def do_info(cs, args):
     """Get general system info."""
     _, info = cs.systeminfo.get()
@@ -377,7 +372,6 @@ def do_info(cs, args):
     utils.print_dict(info)
 
 
-# /systeminfo/getcert`
 def do_get_cert(cs, args):
     """Get default root cert under OVA deployment."""
     try:
@@ -403,3 +397,89 @@ def do_get_conf(cs, args):
         item['editable'] = configurations[key]['editable']
         data.append(item)
     utils.print_list(data, ['name', 'value', 'editable'], sortby='name')
+
+
+def do_target_list(cs, args):
+    _, targets = cs.targets.list()
+    fields = ['id', 'name', 'endpoint',
+              'username', 'password', 'creation_time']
+    utils.print_list(targets, fields)
+
+
+@utils.arg(
+    'target',
+    metavar='<taregt>',
+    help=_("The target name or id."))
+def do_target_ping(cs, args):
+    target = None
+    if is_id(args.target):
+        target = args.target
+    else:
+        _, targets = cs.targets.list()
+        for t in targets:
+            if t['name'] == args.target:
+                target = t['id']
+                break
+    if not target:
+        print("target '%s' not found!" % args.target)
+        return 1
+    try:
+        resp, result = cs.targets.ping(target)
+        if resp.status_code == 200:
+            print("OK")
+        else:
+            print("Fail")
+    except Exception as e:
+        print("Can not ping target: %s" % e)
+
+
+@utils.arg(
+    'target',
+    metavar='<target>',
+    help=_("The target name or id."))
+def do_policy_list(cs, args):
+    target = None
+    if is_id(args.target):
+        target = args.target
+    else:
+        _, targets = cs.targets.list()
+        for t in targets:
+            if t['name'] == args.target:
+                target = t['id']
+                break
+    if not target:
+        print("target '%s' not found!" % args.target)
+        return 1
+    try:
+        resp, policies = cs.targets.list_policies(target)
+    except exp.NotFound:
+        print("target '%s' not found!" % args.target)
+        return 1
+    if not policies:
+        policies = []
+    fields = ["id", "name", "description",
+              "enabled", "start_time", "cron_str",
+              "creation_time"]
+    utils.print_list(policies, fields, sortby='id')
+
+
+@utils.arg(
+    'policy_id',
+    metavar='<policy_id>',
+    help=_("The policy id."))
+def do_job_list(cs, args):
+    _, jobs = cs.jobs.list(args.policy_id)
+    for job in jobs:
+        if job['tags']:
+            job['name'] += ":" + job['tags']
+    fields = ['id', 'repository', 'operation', 'status', 'update_time']
+    utils.print_list(jobs, fields, sortby='id')
+
+
+@utils.arg(
+    'job_id',
+    metavar='<job_id>',
+    help=_("The job id."))
+def do_job_log(cs, args):
+    _, log = cs.jobs.get_log(args.job_id)
+    print(log)
