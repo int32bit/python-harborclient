@@ -35,7 +35,7 @@ class UserManager(base.Manager):
         return self._list("/users")
 
     def get_id_by_name(self, name):
-        _, users = self.list()
+        users = self.list()
         for u in users:
             if u['username'] == name:
                 return u['user_id']

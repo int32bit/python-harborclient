@@ -23,14 +23,14 @@ class ProjectManager(base.Manager):
         return self._list("/projects")
 
     def get_id_by_name(self, name):
-        _, projects = self.list()
+        projects = self.list()
         for p in projects:
             if p['name'] == name:
                 return p['project_id']
         raise exp.ProjectNotFound("Project '%s' not Found." % name)
 
     def get_name_by_id(self, id):
-        _, projects = self.list()
+        projects = self.list()
         for p in projects:
             if p['project_id'] == id:
                 return p['name']

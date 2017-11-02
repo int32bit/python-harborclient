@@ -200,12 +200,12 @@ class HTTPClient(object):
             body = json.loads(resp.text)
         except ValueError:
             body = resp.text
-        return resp, body
+        return body
 
     def _time_request(self, url, method, **kwargs):
         with utils.record_time(self.times, self.timings, method, url):
-            resp, body = self.request(url, method, **kwargs)
-        return resp, body
+            body = self.request(url, method, **kwargs)
+        return body
 
     def _cs_request(self, url, method, **kwargs):
         if not self.session_id:
@@ -214,12 +214,12 @@ class HTTPClient(object):
         # might be because the auth token expired, so try to
         # re-authenticate and try again. If it still fails, bail.
         try:
-            resp, body = self._time_request(
+            body = self._time_request(
                 url,
                 method,
                 cookies={'beegosessionID': self.session_id},
                 **kwargs)
-            return resp, body
+            return body
         except exceptions.Unauthorized as e:
             try:
                 # first discard auth token, to avoid the possibly expired
@@ -227,8 +227,8 @@ class HTTPClient(object):
                 self.unauthenticate()
                 # overwrite bad token
                 self.authenticate()
-                resp, body = self._time_request(url, method, **kwargs)
-                return resp, body
+                body = self._time_request(url, method, **kwargs)
+                return body
             except exceptions.Unauthorized:
                 raise e
 

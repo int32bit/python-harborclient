@@ -23,10 +23,10 @@ class Manager(object):
 
     def _list(self, url, body=None):
         if body:
-            resp, body = self.api.client.post(url, body=body)
+            data = self.api.client.post(url, body=body)
         else:
-            resp, body = self.api.client.get(url)
-        return resp, body
+            data = self.api.client.get(url)
+        return data
 
     def _get(self, url):
         return self.api.client.get(url)

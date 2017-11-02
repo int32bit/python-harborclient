@@ -46,7 +46,7 @@ def do_login(cs, args):
     help='Sort key.')
 def do_user_list(cs, args):
     """Print a list of available 'users'."""
-    _, users = cs.users.list()
+    users = cs.users.list()
     fields = ['user_id', 'username', 'email', 'realname', 'comment']
     utils.print_list(users, fields, sortby=args.sortby)
 
@@ -59,7 +59,7 @@ def do_user_show(cs, args):
         id = key
     else:
         id = cs.users.get_id_by_name(key)
-    _, user = cs.users.get(id)
+    user = cs.users.get(id)
     utils.print_dict(user)
 
 
@@ -71,7 +71,7 @@ def do_user_show(cs, args):
     help='show detail info.')
 def do_whoami(cs, args):
     """Get current user info."""
-    _, user = cs.users.current()
+    user = cs.users.current()
     if args.detail:
         utils.print_dict(user)
     else:
@@ -110,7 +110,8 @@ def do_whoami(cs, args):
     help='Comment of the new user')
 def do_user_create(cs, args):
     """Create a new User. """
-    cs.users.create(args.username, args.password, args.email, args.realname,
+    cs.users.create(args.username, args.password,
+                    args.email, args.realname,
                     args.comment)
     print("Create user '%s' successfully." % args.username)
 
@@ -135,7 +136,7 @@ def do_user_delete(cs, args):
     help='Sort key.')
 def do_project_list(cs, args):
     """Print a list of available 'projects'."""
-    _, projects = cs.projects.list()
+    projects = cs.projects.list()
     fields = [
         'project_id',
         'name',
@@ -160,7 +161,7 @@ def do_member_list(cs, args):
     project = args.project_id
     if not project:
         project = cs.client.project
-    _, members = cs.projects.get_members(project)
+    members = cs.projects.get_members(project)
     fields = [
         'username',
         'role_name',
@@ -178,7 +179,7 @@ def do_project_show(cs, args):
         project_id = key
     else:
         project_id = cs.projects.get_id_by_name(key)
-    _, projects = cs.projects.list()
+    projects = cs.projects.list()
     for project in projects:
         if str(project['project_id']) == str(project_id):
             utils.print_dict(project)
@@ -216,13 +217,13 @@ def do_list(cs, args):
     project_id = args.project_id
     if not project_id:
         project_id = cs.client.project
-    _, repositories = cs.repositories.list(project_id)
+    repositories = cs.repositories.list(project_id)
     data = []
     for repo in repositories:
-        _, tags = cs.repositories.list_tags(repo['name'])
+        tags = cs.repositories.list_tags(repo['name'])
         for tag in tags:
             item = repo.copy()
-            _, manifest = cs.repositories.get_manifests(item['name'],
+            manifest = cs.repositories.get_manifests(item['name'],
                                                         tag['name'])
             size = 0
             for layer in manifest['manifest']['layers']:
@@ -242,7 +243,7 @@ def do_list(cs, args):
 @utils.arg('repository', metavar='<repository>', help='Name of repository.')
 def do_list_tags(cs, args):
     """Get tags of a relevant repository."""
-    resp, tags = cs.repositories.list_tags(args.repository)
+    tags = cs.repositories.list_tags(args.repository)
     fields = ["name", 'author', 'architecture',
               'os', 'docker_version', 'created']
     utils.print_list(tags, fields, sortby="name")
@@ -273,7 +274,7 @@ def do_show(cs, args):
         tag = "latest"
     if repo.find('/') == -1:
         repo = "library/" + repo
-    _, repos = cs.repositories.list(project)
+    repos = cs.repositories.list(project)
     found_repo = None
     for r in repos:
         if r['name'] == repo:
@@ -282,7 +283,7 @@ def do_show(cs, args):
     if not found_repo:
         print("Image '%s' not found." % repo)
         return
-    _, tags = cs.repositories.list_tags(found_repo['name'])
+    tags = cs.repositories.list_tags(found_repo['name'])
     found_tag = None
     for t in tags:
         if t['name'] == tag:
@@ -305,7 +306,7 @@ def do_show(cs, args):
     help='Count.')
 def do_top(cs, args):
     """Get top accessed repositories. """
-    resp, data = cs.repositories.get_top(args.count)
+    data = cs.repositories.get_top(args.count)
     utils.print_list(data,
                      ['name', 'pull_count', 'star_count'],
                      sortby='pull_count')
@@ -317,7 +318,7 @@ def do_top(cs, args):
     help='Search parameter for project and repository name.')
 def do_search(cs, args):
     """Search for projects and repositories """
-    resp, data = cs.searcher.search(args.query)
+    data = cs.searcher.search(args.query)
     project_fields = ['id', 'name', 'public']
     print("Find %d Projects: " % len(data['project']))
     utils.print_list(
@@ -336,7 +337,7 @@ def do_search(cs, args):
 
 def do_usage(cs, args):
     """Get statistics data. """
-    _, data = cs.statistics.list()
+    data = cs.statistics.list()
     utils.print_dict(data)
 
 
@@ -348,7 +349,7 @@ def do_usage(cs, args):
     help='Sort key.')
 def do_logs(cs, args):
     """Get logs. """
-    _, logs = cs.logs.list()
+    logs = cs.logs.list()
     for log in logs:
         repo = log['repo_name']
         tag = None
@@ -364,8 +365,8 @@ def do_logs(cs, args):
 
 def do_info(cs, args):
     """Get general system info."""
-    _, info = cs.systeminfo.get()
-    _, volumes = cs.systeminfo.get_volumes()
+    info = cs.systeminfo.get()
+    volumes = cs.systeminfo.get_volumes()
     info['disk_total'] = volumes['storage']['total']
     info['disk_free'] = volumes['storage']['free']
     utils.print_dict(info)
@@ -374,20 +375,20 @@ def do_info(cs, args):
 def do_get_cert(cs, args):
     """Get default root cert under OVA deployment."""
     try:
-        _, certs = cs.systeminfo.get_cert()
+        certs = cs.systeminfo.get_cert()
     except exp.NotFound:
         print("No certificate found")
 
 
 def do_version(cs, args):
     """Get harbor version."""
-    _, info = cs.systeminfo.get()
+    info = cs.systeminfo.get()
     print(info['harbor_version'])
 
 
 def do_get_conf(cs, args):
     """Get system configurations."""
-    _, configurations = cs.configurations.get()
+    configurations = cs.configurations.get()
     data = []
     for key in configurations:
         item = {}
@@ -399,7 +400,7 @@ def do_get_conf(cs, args):
 
 
 def do_target_list(cs, args):
-    _, targets = cs.targets.list()
+    targets = cs.targets.list()
     fields = ['id', 'name', 'endpoint',
               'username', 'password', 'creation_time']
     utils.print_list(targets, fields)
@@ -414,7 +415,7 @@ def do_target_ping(cs, args):
     if is_id(args.target):
         target = args.target
     else:
-        _, targets = cs.targets.list()
+        targets = cs.targets.list()
         for t in targets:
             if t['name'] == args.target:
                 target = t['id']
@@ -423,11 +424,8 @@ def do_target_ping(cs, args):
         print("target '%s' not found!" % args.target)
         return 1
     try:
-        resp, result = cs.targets.ping(target)
-        if resp.status_code == 200:
-            print("OK")
-        else:
-            print("Fail")
+        result = cs.targets.ping(target)
+        print("OK")
     except Exception as e:
         print("Can not ping target: %s" % e)
 
@@ -441,7 +439,7 @@ def do_policy_list(cs, args):
     if is_id(args.target):
         target = args.target
     else:
-        _, targets = cs.targets.list()
+        targets = cs.targets.list()
         for t in targets:
             if t['name'] == args.target:
                 target = t['id']
@@ -450,7 +448,7 @@ def do_policy_list(cs, args):
         print("target '%s' not found!" % args.target)
         return 1
     try:
-        resp, policies = cs.targets.list_policies(target)
+        policies = cs.targets.list_policies(target)
     except exp.NotFound:
         print("target '%s' not found!" % args.target)
         return 1
@@ -467,7 +465,7 @@ def do_policy_list(cs, args):
     metavar='<policy_id>',
     help="The policy id.")
 def do_job_list(cs, args):
-    _, jobs = cs.jobs.list(args.policy_id)
+    jobs = cs.jobs.list(args.policy_id)
     for job in jobs:
         if job['tags']:
             job['name'] += ":" + job['tags']
@@ -480,5 +478,5 @@ def do_job_list(cs, args):
     metavar='<job_id>',
     help="The job id.")
 def do_job_log(cs, args):
-    _, log = cs.jobs.get_log(args.job_id)
+    log = cs.jobs.get_log(args.job_id)
     print(log)
