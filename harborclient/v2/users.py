@@ -39,7 +39,17 @@ class UserManager(base.Manager):
         for u in users:
             if u['username'] == name:
                 return u['user_id']
-        raise exp.UserNotFound("User '%s' Not Found!" % name)
+        raise exp.NotFound("User '%s' Not Found!" % name)
+
+    def find(self, key):
+        if self.is_id(key):
+            return self.get(key)
+        else:
+            users = self.list()
+            for user in users:
+                if user['username'] == key:
+                    return user
+        raise exp.NotFound("User '%s' Not Found!" % name)
 
     def create(self, username, password, email, realname=None, comment=None):
         data = {
@@ -50,6 +60,12 @@ class UserManager(base.Manager):
             "comment": comment or "",
         }
         return self._create("/users", data)
+
+    def update(self, id, realname, email, comment):
+        profile = {"realname": realname,
+                   "email": email,
+                   "comment": comment}
+        return self._update("/users/%s" % id, profile)
 
     def delete(self, id):
         """Delete this user.
@@ -64,3 +80,15 @@ class UserManager(base.Manager):
         resp = requests.post(baseurl + "/login", data,
                              verify=self.client.verify_cert)
         return resp
+
+    def change_password(self, id, old_password, new_password):
+        profile = {"old_password": old_password,
+                   "new_password": new_password}
+        return self._update("/users/%s/password" % id, profile)
+
+    def set_admin(self, id, is_admin):
+        if is_admin:
+            profile = {"has_admin_role": 1}
+        else:
+            profile = {"has_admin_role": 0}
+        return self._update("/users/%s/sysadmin" % id, profile)

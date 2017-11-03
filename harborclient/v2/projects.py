@@ -27,7 +27,7 @@ class ProjectManager(base.Manager):
         for p in projects:
             if p['name'] == name:
                 return p['project_id']
-        raise exp.ProjectNotFound("Project '%s' not Found." % name)
+        raise exp.NotFound("Project '%s' not Found." % name)
 
     def get_name_by_id(self, id):
         projects = self.list()
@@ -36,15 +36,9 @@ class ProjectManager(base.Manager):
                 return p['name']
         raise exp.ProjectNotFound("Project '%s' not Found." % id)
 
-    def create(self, username, password, email, realname=None, comment=None):
-        data = {
-            "username": username,
-            "password": password,
-            "email": email,
-            "realname": realname or username,
-            "comment": comment or "",
-        }
-        return self._create("/users", data)
+    def create(self, name, public=True):
+        project = {"project_name": name, "public": 1 if public else 0}
+        return self._create("/projects", project)
 
     def delete(self, id):
         """Delete (i.e. shut down and delete the image) this server.

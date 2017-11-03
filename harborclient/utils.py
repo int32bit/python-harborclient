@@ -68,7 +68,10 @@ def print_list(objs, fields, formatters={}, sortby=None, align='c'):
         row = []
         for field in fields:
             if field in formatters:
-                row.append(formatters[field](o))
+                if callable(formatters[field]):
+                    row.append(formatters[field](o))
+                else:
+                    row.append(o.get(formatters[field], None))
             else:
                 data = o.get(field, None)
                 if data is None or data == "":
