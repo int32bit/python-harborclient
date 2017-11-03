@@ -1,6 +1,9 @@
 from __future__ import print_function
 
+import getpass
 import logging
+
+from oslo_utils import strutils
 
 from harborclient import exceptions as exp
 from harborclient import utils
@@ -47,8 +50,97 @@ def do_login(cs, args):
 def do_user_list(cs, args):
     """Print a list of available 'users'."""
     users = cs.users.list()
-    fields = ['user_id', 'username', 'email', 'realname', 'comment']
-    utils.print_list(users, fields, sortby=args.sortby)
+    # Get admin user
+    try:
+        admin = cs.users.get(1)
+        users.append(admin)
+    except Exception:
+        pass
+    fields = ['user_id', 'username', 'is_admin',
+              'email', 'realname', 'comment']
+    formatters = {"is_admin": 'has_admin_role'}
+    utils.print_list(users, fields, formatters=formatters, sortby=args.sortby)
+
+
+@utils.arg(
+    'user',
+    metavar='<user>',
+    help='User name or id')
+def do_promote(cs, args):
+    """Promote a user to administrator."""
+    try:
+        user = cs.users.find(args.user)
+    except exp.NotFound:
+        print("User '%s' not found." % args.user)
+    cs.users.set_admin(user['user_id'], True)
+    print("Promote user '%s' as administrator successfully." % args.user)
+
+
+@utils.arg(
+    'user',
+    metavar='<user>',
+    help='User name or id')
+def do_revoke(cs, args):
+    """Update a user to non-admin."""
+    try:
+        user = cs.users.find(args.user)
+    except exp.NotFound:
+        print("User '%s' not found." % args.user)
+    cs.users.set_admin(user['user_id'], False)
+    print("Revoke admin privilege from user '%s' successfully." % args.user)
+
+
+@utils.arg(
+    'user',
+    metavar='<user>',
+    help='User name or id')
+@utils.arg(
+    '--email',
+    metavar='<email>',
+    dest='email',
+    help='Email of the user')
+@utils.arg(
+    '--realname',
+    metavar='<realname>',
+    dest='realname',
+    help='Email of the user')
+@utils.arg(
+    '--comment',
+    metavar='<comment>',
+    dest='comment',
+    help='Comment of the user')
+def do_user_update(cs, args):
+    """Update a registered user to change his profile."""
+    try:
+        user = cs.users.find(args.user)
+    except exp.NotFound:
+        print("User '%s' not found." % args.user)
+    realname = args.realname or user['realname']
+    email = args.email or user['email']
+    comment = args.comment or user['comment']
+    cs.users.update(user['user_id'], realname, email, comment)
+    user = cs.users.get(user['user_id'])
+    utils.print_dict(user)
+
+
+@utils.arg(
+    'user',
+    metavar='<user>',
+    help='User name or id')
+def do_change_password(cs, args):
+    """Change the password on a user that already exists."""
+    try:
+        user = cs.users.find(args.user)
+    except exp.NotFound:
+        print("User '%s' not found." % args.user)
+    old_password = getpass.getpass('Old password: ')
+    new_password = getpass.getpass('New Password: ')
+    try:
+        cs.users.change_password(user['user_id'], old_password, new_password)
+        print("Update password successfully.")
+    except exp.Forbidden as e:
+        print(e.message.replace("_", ' '))
+        return 1
 
 
 @utils.arg('user', metavar='<user>', help='ID or name of user.')
@@ -194,9 +286,37 @@ def do_project_delete(cs, args):
     if cs.projects.is_id(key):
         id = key
     else:
-        id = cs.projects.get_id_by_name(key)
-    cs.projects.delete(id)
-    print("Delete Project '%s' successfully." % key)
+        try:
+            id = cs.projects.get_id_by_name(key)
+        except exp.NotFound:
+            print("Project '%s' not found." % args.project)
+            return 1
+    try:
+        cs.projects.delete(id)
+        print("Delete Project '%s' successfully." % key)
+        return 0
+    except exp.NotFound:
+        print("Project '%s' not Found." % args.project)
+        return 1
+
+
+@utils.arg(
+    'name',
+    metavar='<name>',
+    help='Name of new project.')
+@utils.arg(
+    '--is-public',
+    metavar='<is-public>',
+    default=True,
+    help='Make project accessible to the public (default true).')
+def do_project_create(cs, args):
+    """Creates a project."""
+    is_public = strutils.bool_from_string(args.is_public, strict=True)
+    try:
+        cs.projects.create(args.name, is_public)
+        print("Create project '%s' successfully." % args.name)
+    except exp.Conflict:
+        print("Project name '%s' already exists." % args.name)
 
 
 @utils.arg(
@@ -401,6 +521,7 @@ def do_get_conf(cs, args):
 
 
 def do_target_list(cs, args):
+    """List filters targets."""
     targets = cs.targets.list()
     fields = ['id', 'name', 'endpoint',
               'username', 'password', 'creation_time']
@@ -412,6 +533,7 @@ def do_target_list(cs, args):
     metavar='<taregt>',
     help="The target name or id.")
 def do_target_ping(cs, args):
+    """Ping validates target."""
     target = None
     if is_id(args.target):
         target = args.target
@@ -436,6 +558,7 @@ def do_target_ping(cs, args):
     metavar='<target>',
     help="The target name or id.")
 def do_policy_list(cs, args):
+    """List filters policies by name and project_id."""
     target = None
     if is_id(args.target):
         target = args.target
@@ -466,6 +589,7 @@ def do_policy_list(cs, args):
     metavar='<policy_id>',
     help="The policy id.")
 def do_job_list(cs, args):
+    """List filters jobs according to the policy and repository."""
     jobs = cs.jobs.list(args.policy_id)
     for job in jobs:
         if job['tags']:
@@ -479,5 +603,6 @@ def do_job_list(cs, args):
     metavar='<job_id>',
     help="The job id.")
 def do_job_log(cs, args):
+    """Get job logs."""
     log = cs.jobs.get_log(args.job_id)
     print(log)
