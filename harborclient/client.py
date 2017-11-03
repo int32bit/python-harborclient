@@ -9,6 +9,7 @@ from urlparse import urlparse
 
 from oslo_utils import importutils
 import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 try:
     import json
@@ -18,6 +19,8 @@ except ImportError:
 from harborclient import api_versions
 from harborclient import exceptions
 from harborclient import utils
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 class HTTPClient(object):
