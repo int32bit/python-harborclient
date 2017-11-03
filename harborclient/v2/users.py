@@ -61,5 +61,6 @@ class UserManager(base.Manager):
 
     def login(self, username, password, baseurl):
         data = {'principal': username, 'password': password}
-        resp = requests.post(baseurl + "/login", data)
+        resp = requests.post(baseurl + "/login", data,
+                             verify=self.client.verify_cert)
         return resp
