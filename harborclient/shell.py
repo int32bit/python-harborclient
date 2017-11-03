@@ -404,7 +404,7 @@ def main():
         argv = [encodeutils.safe_decode(a) for a in sys.argv[1:]]
         HarborShell().main(argv)
     except KeyboardInterrupt:
-        print(_("... terminating harbor client"), file=sys.stderr)
+        print("... terminating harbor client", file=sys.stderr)
         sys.exit(130)
 
 
