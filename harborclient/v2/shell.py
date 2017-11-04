@@ -426,7 +426,15 @@ def do_show(cs, args):
     help='Count.')
 def do_top(cs, args):
     """Get top accessed repositories. """
-    data = cs.repositories.get_top(args.count)
+    try:
+        count = int(args.count)
+    except ValueError:
+        print("'%s' is not a valid number." % args.count)
+        return 1
+    if count < 1:
+        print("invalid count %s, count must > 0." % args.count)
+        return 1
+    data = cs.repositories.get_top(count)
     utils.print_list(data,
                      ['name', 'pull_count', 'star_count'],
                      sortby='pull_count')
@@ -439,7 +447,8 @@ def do_top(cs, args):
 def do_search(cs, args):
     """Search for projects and repositories """
     data = cs.searcher.search(args.query)
-    project_fields = ['id', 'name', 'public']
+    project_fields = ['project_id', 'name', 'public',
+                      'repo_count', 'creation_time']
     print("Find %d Projects: " % len(data['project']))
     utils.print_list(
         data['project'], project_fields, formatters={}, sortby='id')
