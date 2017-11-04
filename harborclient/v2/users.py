@@ -49,7 +49,7 @@ class UserManager(base.Manager):
             for user in users:
                 if user['username'] == key:
                     return user
-        raise exp.NotFound("User '%s' Not Found!" % name)
+        raise exp.NotFound("User '%s' Not Found!" % key)
 
     def create(self, username, password, email, realname=None, comment=None):
         data = {

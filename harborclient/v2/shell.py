@@ -54,9 +54,10 @@ def do_user_list(cs, args):
     try:
         admin = cs.users.get(1)
         users.append(admin)
-    except:
+    except Exception:
         pass
-    fields = ['user_id', 'username', 'is_admin', 'email', 'realname', 'comment']
+    fields = ['user_id', 'username', 'is_admin',
+              'email', 'realname', 'comment']
     formatters = {"is_admin": 'has_admin_role'}
     utils.print_list(users, fields, formatters=formatters, sortby=args.sortby)
 
