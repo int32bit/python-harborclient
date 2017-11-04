@@ -2,7 +2,6 @@
 Base utilities to build API operation managers and objects on top of.
 """
 
-
 class Manager(object):
     """Manager for API service.
 

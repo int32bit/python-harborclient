@@ -355,16 +355,15 @@ class HarborShell(object):
         Prints all of the commands and options to stdout so that the
         harbor.bash_completion script doesn't have to hard code them.
         """
-        commands = set()
-        options = set()
+        commands = list()
+        options = list()
         for sc_str, sc in self.subcommands.items():
-            commands.add(sc_str)
+            commands.append(sc_str)
             for option in sc._optionals._option_string_actions.keys():
-                options.add(option)
+                options.append(option)
 
-        commands.remove('bash-completion')
-        commands.remove('bash_completion')
-        print(' '.join(commands | options))
+        options.extend(self.parser._option_string_actions.keys())
+        print(' '.join(set(commands + options)))
 
     @utils.arg(
         'command',
