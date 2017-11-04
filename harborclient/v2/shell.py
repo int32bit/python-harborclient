@@ -539,7 +539,7 @@ def do_target_list(cs, args):
 
 @utils.arg(
     'target',
-    metavar='<taregt>',
+    metavar='<target>',
     help="The target name or id.")
 def do_target_ping(cs, args):
     """Ping validates target."""
