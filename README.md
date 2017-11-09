@@ -10,6 +10,7 @@ Harbor CLI can be installed by one of two approaches:
 
 * Option 1: Build as a Docker image(easy, recommended)
 * Option 2: Native Installation from Source
+* Option 3: Install from pypi
 
 ### Option 1: Build as a Docker image(easy, recommended)
 
@@ -98,7 +99,13 @@ Or
 sudo pip install .
 ```
 
-#### Verify operation
+### Option 3: Install from pypi
+
+```
+sudo pip install python-harborclient
+```
+
+### Verify operation
 
 As the `admin` user, do a `info` request:
 
@@ -124,7 +131,7 @@ password: *****
 +------------------------------+---------------------+
 ```
 
-#### Create harbor client environment scripts
+### Create harbor client environment scripts
 
 To increase efficiency of client operations, Harbor CLI supports simple client environment scrips also known as `harborrc` file.
 These scripts typically contain common options for all client, but also support unique options.
@@ -161,7 +168,7 @@ $ harbor list
 +-----------------------+------------+-----------+------------+------------+------------+----------------------+
 ```
 
-#### Setup bash completion
+### Setup bash completion
 
 ```bash
 $ complete -W $(harbor bash-completion) harbor
