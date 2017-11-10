@@ -26,7 +26,7 @@ def is_id(obj):
     default="user_id",
     help='Sort key.')
 def do_user_list(cs, args):
-    """Print a list of available 'users'."""
+    """Get registered users of Harbor."""
     try:
         users = cs.users.list()
     except exp.Forbidden as e:
@@ -47,22 +47,22 @@ def do_user_list(cs, args):
     'user',
     metavar='<user>',
     help='User name or id')
-def do_promote(cs, args):
-    """Promote a user to administrator."""
+def do_set_admin(cs, args):
+    """Update a registered user to change to be an administrator of Harbor."""
     try:
         user = cs.users.find(args.user)
     except exp.NotFound:
         print("User '%s' not found." % args.user)
     cs.users.set_admin(user['user_id'], True)
-    print("Promote user '%s' as administrator successfully." % args.user)
+    print("Set user '%s' as administrator successfully." % args.user)
 
 
 @utils.arg(
     'user',
     metavar='<user>',
     help='User name or id')
-def do_revoke(cs, args):
-    """Update a user to non-admin."""
+def do_revoke_admin(cs, args):
+    """Update a registered user to be a non-admin of Harbor."""
     try:
         user = cs.users.find(args.user)
     except exp.NotFound:
@@ -126,7 +126,7 @@ def do_change_password(cs, args):
 
 @utils.arg('user', metavar='<user>', help='ID or name of user.')
 def do_user_show(cs, args):
-    """Show details about the given user."""
+    """Get a user's profile."""
     key = args.user
     if cs.users.is_id(key):
         id = key
@@ -182,7 +182,7 @@ def do_whoami(cs, args):
     default=None,
     help='Comment of the new user')
 def do_user_create(cs, args):
-    """Create a new User. """
+    """Creates a new user account."""
     cs.users.create(args.username, args.password,
                     args.email, args.realname,
                     args.comment)
@@ -191,7 +191,7 @@ def do_user_create(cs, args):
 
 @utils.arg('user', metavar='<user>', help='ID or name of user.')
 def do_user_delete(cs, args):
-    """Delete an user """
+    """Mark a registered user as be removed."""
     key = args.user
     if cs.users.is_id(key):
         id = key
@@ -208,7 +208,7 @@ def do_user_delete(cs, args):
     default="project_id",
     help='Sort key.')
 def do_project_list(cs, args):
-    """Print a list of available 'projects'."""
+    """List projects."""
     projects = cs.projects.list()
     fields = [
         'project_id',
@@ -230,7 +230,7 @@ def do_project_list(cs, args):
     default=None,
     help='ID of project.')
 def do_member_list(cs, args):
-    """Print a list of available 'projects'."""
+    """List a project's relevant role members."""
     project = args.project_id
     if not project:
         project = cs.client.project
@@ -246,7 +246,7 @@ def do_member_list(cs, args):
 
 @utils.arg('project', metavar='<project>', help='ID or name of project.')
 def do_project_show(cs, args):
-    """Show details about the given project."""
+    """Show specific project detail infomation."""
     key = args.project
     if cs.projects.is_id(key):
         project_id = key
@@ -262,7 +262,7 @@ def do_project_show(cs, args):
 
 @utils.arg('project', metavar='<project>', help='ID or name of project.')
 def do_project_delete(cs, args):
-    """Delete the given project."""
+    """Delete project by Id or name."""
     key = args.project
     if cs.projects.is_id(key):
         id = key
@@ -291,7 +291,7 @@ def do_project_delete(cs, args):
     default=True,
     help='Make project accessible to the public (default true).')
 def do_project_create(cs, args):
-    """Creates a project."""
+    """Create a new project."""
     is_public = strutils.bool_from_string(args.is_public, strict=True)
     try:
         cs.projects.create(args.name, is_public)
@@ -314,7 +314,7 @@ def do_project_create(cs, args):
     default='Id',
     help='Sort key.')
 def do_list(cs, args):
-    """Print a list of available 'repositories'."""
+    """Get repositories accompany with relevant project and repo name."""
     project_id = args.project_id
     if not project_id:
         project_id = cs.client.project
@@ -362,7 +362,7 @@ def do_list_tags(cs, args):
     metavar='<repository>',
     help="Repository name, for example: int32bit/ubuntu:14.04.")
 def do_show(cs, args):
-    """Show details about the given repository. """
+    """Show specific repository detail infomation."""
     project = args.project_id
     if not project:
         project = cs.client.project
@@ -406,7 +406,7 @@ def do_show(cs, args):
     default=5,
     help='Count.')
 def do_top(cs, args):
-    """Get top accessed repositories. """
+    """Get public repositories which are accessed most."""
     try:
         count = int(args.count)
     except ValueError:
@@ -426,7 +426,7 @@ def do_top(cs, args):
     metavar='<query>',
     help='Search parameter for project and repository name.')
 def do_search(cs, args):
-    """Search for projects and repositories """
+    """Search for projects and repositories."""
     data = cs.searcher.search(args.query)
     project_fields = ['project_id', 'name', 'public',
                       'repo_count', 'creation_time']
@@ -446,7 +446,7 @@ def do_search(cs, args):
 
 
 def do_usage(cs, args):
-    """Get statistics data. """
+    """Get projects number and repositories number relevant to the user."""
     data = cs.statistics.list()
     utils.print_dict(data)
 
@@ -458,7 +458,7 @@ def do_usage(cs, args):
     default='op_time',
     help='Sort key.')
 def do_logs(cs, args):
-    """Get logs. """
+    """Get recent logs of the projects which the user is a member of."""
     logs = cs.logs.list() or []
     for log in logs:
         repo = log['repo_name']
