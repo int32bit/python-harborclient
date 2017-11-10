@@ -16,19 +16,19 @@ Harbor CLI can be installed by one of two approaches:
 
 We maintain a Docker prebuilt image with Harbor CLI. Install the CLI using `docker run`.
 
-```sh
+```
 docker run -t -i krystism/harborclient harbor help
 ```
 
 We strongly suggest you build image from code manually, because our prebuilt image may be not latest version.
 
-```sh
+```
 docker build -t yourname/harborclient .
 ```
 
 Run Harbor CLI as follows:
 
-```bash
+```
 $ docker run --rm \
  -e HARBOR_USERNAME="admin" \
  -e HARBOR_PASSWORD="Harbor12345" \
@@ -138,7 +138,7 @@ These scripts typically contain common options for all client, but also support 
 
 Create client environment scripts for `admin` user:
 
-```bash
+```sh
 cat >admin-harborrc <<EOF
 export HARBOR_USERNAME=admin
 export HARBOR_PASSWORD=Harbor12345
@@ -157,7 +157,7 @@ source admin-harborrc
 
 List images:
 
-```bash
+```
 $ harbor list
 +-----------------------+------------+-----------+------------+------------+------------+----------------------+
 |          name         | project_id |    size   | tags_count | star_count | pull_count |     update_time      |
@@ -170,7 +170,7 @@ $ harbor list
 
 ### Setup bash completion
 
-```bash
+```
 $ complete -W $(harbor bash-completion) harbor
 $ harbor us<tab><tab>
 usage user-create user-delete user-list user-show  user-update
@@ -193,7 +193,7 @@ This guide walks you through the fundamentals of using Harbor CLI. You'll learn 
 
 Once you install Harbor CLI, you can run `harbor help` to get usage:
 
-```bash
+```
 $ harbor help
 usage: harbor [--debug] [--timings] [--version] [--os-username <username>]
               [--os-password <password>] [--os-project <project>]
@@ -204,7 +204,7 @@ usage: harbor [--debug] [--timings] [--version] [--os-username <username>]
 
 Run "harbor help COMMAND" for help on a specific command.
 
-```bash
+```
 $ harbor help user-create
 usage: harbor user-create --username <username> --password <password> --email
                           <email> [--realname <realname>]
@@ -222,7 +222,7 @@ Optional arguments:
 
 Show details about API requests using `--debug` option:
 
-```bash
+```
 $ harbor  --debug --insecure project-list
 DEBUG (connectionpool:824) Starting new HTTPS connection (1): devstack
 DEBUG (connectionpool:396) https://devstack:443 "POST /login HTTP/1.1" 200 0
@@ -344,7 +344,7 @@ $ harbor  list
 ### Show details about image
 
 ```
-$ harbor  show int32bit/golang:1.7.3
+$ harbor show int32bit/golang:1.7.3
 +--------------------+-------------------------------------------------------------------------+
 | Property           | Value                                                                   |
 +--------------------+-------------------------------------------------------------------------+
