@@ -263,11 +263,19 @@ class HTTPClient(object):
                    "specified in '%s'") % self.__class__.__name__
             raise exceptions.AuthorizationFailure(msg)
 
-        resp = requests.post(
-            self.baseurl + "/login",
-            data={'principal': self.username,
-                  'password': self.password},
-            verify=self.verify_cert)
+        try:
+            resp = requests.post(
+                self.baseurl + "/login",
+                data={'principal': self.username,
+                      'password': self.password},
+                verify=self.verify_cert)
+        except requests.exceptions.SSLError:
+            msg = ("Certificate verify failed, please use '--os-cacert' option"
+                   " to specify a CA bundle file to use in verifying a TLS"
+                   " (https) server certificate or use '--insecure' option"
+                   " to explicitly allow client to perform insecure"
+                   " TLS (https) requests.")
+            raise exceptions.AuthorizationFailure(msg)
         if resp.status_code == 200:
             self.session_id = resp.cookies.get('beegosessionID')
             logging.debug(
