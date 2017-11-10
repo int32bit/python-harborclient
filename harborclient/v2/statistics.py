@@ -3,8 +3,5 @@ from harborclient import base
 
 class StatisticsManager(base.Manager):
     def list(self):
-        """Get statistics data.
-
-        :rtype: list of :class:`Statistics`
-        """
+        """Get projects number and repositories number relevant to the user."""
         return self._list("/statistics")

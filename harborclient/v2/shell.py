@@ -20,28 +20,6 @@ def is_id(obj):
 
 
 @utils.arg(
-    '--username',
-    metavar='<username>',
-    dest='username',
-    required=True,
-    help='Username.')
-@utils.arg(
-    '--password',
-    metavar='<password>',
-    dest='password',
-    required=True,
-    help='Password.')
-def do_login(cs, args):
-    """Login and return the session id. """
-    resp = cs.users.login(args.username, args.password, cs.baseurl)
-    if resp.status_code == 200:
-        print("Successfully login, session id: %s" %
-              resp.cookies.get('beegosessionID'))
-    else:
-        print("Failed to login! Please re-check your username and password")
-
-
-@utils.arg(
     '--sortby',
     metavar='<sortby>',
     dest="sortby",

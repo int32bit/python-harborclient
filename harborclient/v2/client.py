@@ -55,16 +55,6 @@ class Client(object):
             api_version=api_version,
             **kwargs)
 
-    def __enter__(self):
-        self.client.open_session()
-        return self
-
-    def __exit__(self, t, v, tb):
-        self.client.close_session()
-
-    def set_management_url(self, url):
-        self.client.set_management_url(url)
-
     def get_timings(self):
         return self.client.get_timings()
 

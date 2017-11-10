@@ -4,10 +4,7 @@ from harborclient import base
 class TargetManager(base.Manager):
 
     def list(self, name=None):
-        """List filters targets by name.
-
-        :rtype: list of :class:`Target`
-        """
+        """List filters targets by name."""
         if name:
             return self._list("/targets?name=%s" % name)
         return self._list("/targets")
