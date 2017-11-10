@@ -27,7 +27,10 @@ def is_id(obj):
     help='Sort key.')
 def do_user_list(cs, args):
     """Print a list of available 'users'."""
-    users = cs.users.list()
+    try:
+        users = cs.users.list()
+    except exp.Forbidden as e:
+        raise exp.CommandError(e.message)
     # Get admin user
     try:
         admin = cs.users.get(1)
@@ -254,7 +257,7 @@ def do_project_show(cs, args):
         if str(project['project_id']) == str(project_id):
             utils.print_dict(project)
             return
-    raise exp.ProjectNotFound("Project '%s' not found" % args.project)
+    raise exp.NotFound("Project '%s' not found" % args.project)
 
 
 @utils.arg('project', metavar='<project>', help='ID or name of project.')
@@ -491,7 +494,7 @@ def do_get_cert(cs, args):
     except exp.NotFound:
         print("No certificate found")
     except exp.Forbidden:
-        print("Forbidden: only admin can perform this operation.")
+        print("Only admin can perform this operation.")
 
 
 def do_version(cs, args):
@@ -505,8 +508,7 @@ def do_get_conf(cs, args):
     try:
         configurations = cs.configurations.get()
     except exp.Forbidden:
-        print("Forbidden: only admin can perform this operation.")
-        return 1
+        raise exp.CommandError("Only admin can perform this operation.")
     data = []
     for key in configurations:
         item = {}

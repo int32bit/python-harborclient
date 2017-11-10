@@ -405,6 +405,9 @@ def main():
     except KeyboardInterrupt:
         print("... terminating harbor client", file=sys.stderr)
         sys.exit(130)
+    except exc.CommandError as e:
+        print("CommandError: %s" % e)
+        sys.exit(127)
 
 
 if __name__ == "__main__":

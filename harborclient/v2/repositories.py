@@ -1,5 +1,4 @@
 from harborclient import base
-from harborclient import exceptions as exp
 
 
 class RepositoryManager(base.Manager):
@@ -9,11 +8,8 @@ class RepositoryManager(base.Manager):
 
     def list(self, project):
         """Get repositories accompany with relevant project and repo name."""
-        try:
-            repositories = self._list("/repositories?project_id=%s" % project)
-            return repositories
-        except exp.NotFound as e:
-            raise exp.ProjectNotFound(e.message)
+        repositories = self._list("/repositories?project_id=%s" % project)
+        return repositories
 
     def list_tags(self, repo_name):
         """Get the tag of the repository."""

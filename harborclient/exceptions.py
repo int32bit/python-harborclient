@@ -44,80 +44,6 @@ class AuthorizationFailure(Exception):
     pass
 
 
-class NoUniqueMatch(Exception):
-    pass
-
-
-class AuthSystemNotFound(Exception):
-    """When the user specify a AuthSystem but not installed."""
-
-    def __init__(self, auth_system):
-        self.auth_system = auth_system
-
-    def __str__(self):
-        return "AuthSystemNotFound: %s" % repr(self.auth_system)
-
-
-class UserNotFound(Exception):
-    pass
-
-
-class ProjectNotFound(Exception):
-    pass
-
-
-class EndpointNotFound(Exception):
-    """Could not find Service or Region in Service Catalog."""
-    pass
-
-
-class AmbiguousEndpoints(Exception):
-    """Found more than one matching endpoint in Service Catalog."""
-
-    def __init__(self, endpoints=None):
-        self.endpoints = endpoints
-
-    def __str__(self):
-        return "AmbiguousEndpoints: %s" % repr(self.endpoints)
-
-
-class ConnectionRefused(Exception):
-    """Connection refused: the server refused the connection."""
-
-    def __init__(self, response=None):
-        self.response = response
-
-    def __str__(self):
-        return "ConnectionRefused: %s" % repr(self.response)
-
-
-class ResourceInErrorState(Exception):
-    """Resource is in the error state."""
-
-    def __init__(self, obj):
-        msg = "`%s` resource is in the error state" % obj.__class__.__name__
-        fault_msg = getattr(obj, "fault", {}).get("message")
-        if fault_msg:
-            msg += "due to '%s'" % fault_msg
-        self.message = "%s." % msg
-
-
-class VersionNotFoundForAPIMethod(Exception):
-    msg_fmt = "API version '%(vers)s' is not supported on '%(method)s' method."
-
-    def __init__(self, version, method):
-        self.version = version
-        self.method = method
-
-    def __str__(self):
-        return self.msg_fmt % {"vers": self.version, "method": self.method}
-
-
-class InstanceInDeletedState(Exception):
-    """Instance is in the deleted state."""
-    pass
-
-
 class ClientException(Exception):
     """The base exception class for all exceptions this library raises."""
     message = 'Unknown Error'
@@ -246,16 +172,6 @@ _error_classes = [
 _code_map = dict((c.http_status, c) for c in _error_classes)
 
 
-class InvalidUsage(RuntimeError):
-    """This function call is invalid in the way you are using this client.
-
-    Due to the transition to using keystoneauth some function calls are no
-    longer available. You should make a similar call to the session object
-    instead.
-    """
-    pass
-
-
 def from_response(response, body, url, method=None):
     """Extract exception from response
 
@@ -276,8 +192,3 @@ def from_response(response, body, url, method=None):
         'message': body.strip(),
     }
     return cls(**kwargs)
-
-
-class ResourceNotFound(Exception):
-    """Error in getting the resource."""
-    pass
