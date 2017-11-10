@@ -456,7 +456,7 @@ def do_usage(cs, args):
     help='Sort key.')
 def do_logs(cs, args):
     """Get logs. """
-    logs = cs.logs.list()
+    logs = cs.logs.list() or []
     for log in logs:
         repo = log['repo_name']
         tag = None
@@ -473,9 +473,13 @@ def do_logs(cs, args):
 def do_info(cs, args):
     """Get general system info."""
     info = cs.systeminfo.get()
-    volumes = cs.systeminfo.get_volumes()
-    info['disk_total'] = volumes['storage']['total']
-    info['disk_free'] = volumes['storage']['free']
+    try:
+        volumes = cs.systeminfo.get_volumes()
+        info['disk_total'] = volumes['storage']['total']
+        info['disk_free'] = volumes['storage']['free']
+    except exp.Forbidden:
+        # Only admin can get volumes
+        pass
     utils.print_dict(info)
 
 
@@ -486,6 +490,8 @@ def do_get_cert(cs, args):
         print(certs)
     except exp.NotFound:
         print("No certificate found")
+    except exp.Forbidden:
+        print("Forbidden: only admin can perform this operation.")
 
 
 def do_version(cs, args):
@@ -496,7 +502,11 @@ def do_version(cs, args):
 
 def do_get_conf(cs, args):
     """Get system configurations."""
-    configurations = cs.configurations.get()
+    try:
+        configurations = cs.configurations.get()
+    except exp.Forbidden:
+        print("Forbidden: only admin can perform this operation.")
+        return 1
     data = []
     for key in configurations:
         item = {}
