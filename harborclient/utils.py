@@ -1,12 +1,12 @@
 import contextlib
 import os
+import prettytable
+import six
 import textwrap
 import time
 
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-import prettytable
-import six
 
 
 def env(*args, **kwargs):
@@ -50,15 +50,6 @@ def add_arg(func, *args, **kwargs):
         # Because of the semantics of decorator composition if we just append
         # to the options list positional options will appear to be backwards.
         func.arguments.insert(0, (args, kwargs))
-
-
-def pretty_choice_list(l):
-    return ', '.join("'%s'" % i for i in l)
-
-
-def pretty_choice_dict(d):
-    """Returns a formatted dict as 'key=value'."""
-    return pretty_choice_list(['%s=%s' % (k, d[k]) for k in sorted(d.keys())])
 
 
 def print_list(objs, fields, formatters={}, sortby=None, align='c'):
@@ -121,18 +112,6 @@ def print_dict(d, dict_property="Property", dict_value="Value", wrap=0):
         result = result.decode()
 
     print(result)
-
-
-def safe_issubclass(*args):
-    """Like issubclass, but will just return False if not a class."""
-
-    try:
-        if issubclass(*args):
-            return True
-    except TypeError:
-        pass
-
-    return False
 
 
 @contextlib.contextmanager
