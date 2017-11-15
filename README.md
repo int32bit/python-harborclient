@@ -573,4 +573,4 @@ Promote user 'int32bit' as administrator successfully.
 
 ## Licensing
 
-HarborClient is licensed under the MIT License, Version 2.0. See [LICENSE](./LICENSE) for the full license text.
+int32bit/python-harborclient is licensed under the Apache License 2.0. See [LICENSE](./LICENSE) for the full license text.

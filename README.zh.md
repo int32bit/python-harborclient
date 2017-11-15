@@ -653,4 +653,4 @@ HelloWorld!
 
 ## 8 协议
 
-MIT
+[Apache License 2.0](./LICENSE)
