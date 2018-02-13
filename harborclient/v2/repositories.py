@@ -11,10 +11,20 @@ class RepositoryManager(base.Manager):
         repositories = self._list("/repositories?project_id=%s" % project)
         return repositories
 
+    def delete_repository(self, repo_name):
+        """Delete the repository."""
+        return self.api.client.delete(
+            "/repositories/%s" % repo_name)
+
     def list_tags(self, repo_name):
         """Get the tag of the repository."""
         return self.api.client.get(
             "/repositories/%s/tags" % repo_name)
+
+    def delete_tags(self, repo_name, tag_name):
+        """Delete the tag of the repository."""
+        return self.api.client.delete(
+            "/repositories/%s/tags/%s" % (repo_name, tag_name))
 
     def get_manifests(self, repo_name, tag):
         """Get manifests of a relevant repository."""
