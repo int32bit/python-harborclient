@@ -426,10 +426,10 @@ def do_tags_delete_reg(cs, args):
         for tag in tags:
             if re.match(args.tag,tag['name']):
                 if args.dryrun:
-                    print("Would have removed : %s:%s" % (repository['name'],tag['name']))
+                    print("Would have removed : %s:%s" % (repository,tag['name']))
                 else:                    
-                    cs.repositories.delete_tags(args.repository, tag['name'])
-                    print("Removed : %s:%s" % (args.repository,tag['name']))
+                    cs.repositories.delete_tags(repository, tag['name'])
+                    print("Removed : %s:%s" % (repository,tag['name']))
 
 
 @utils.arg(
