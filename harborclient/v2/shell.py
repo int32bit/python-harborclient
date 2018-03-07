@@ -328,9 +328,11 @@ def do_list(cs, args):
             manifest = cs.repositories.get_manifests(item['name'],
                                                      tag['name'])
             size = 0
+
             for layer in manifest['manifest']['layers']:
                 size += layer['size']
             item['size'] = size
+
             if tag['name'] != 'latest':
                 item['name'] = repo['name'] + ":" + tag['name']
             data.append(item)
@@ -343,37 +345,27 @@ def do_list(cs, args):
 
 
 @utils.arg(
-    '--repository',
+    'repository',
     metavar='<repository>',
-    help='Name of repository to be deleted.')
-@utils.arg(
-    '--repo-reg',
-    metavar='<repo_reg>',
-    help='expression to list the repositories to be deleted')
+    help='Regular Expression of repository to be deleted.')
 @utils.arg(
     '--dry-run',
     '-d',
     dest='dryrun',
     action="store_true",
-    help="will only print what would have been removed")
+    help="will only print what would have been deleted")
 def do_repository_delete(cs, args):
     """Delete repository"""
-    if args.repo_reg:
-        # list all the repositories to delete
-        repositories = cs.repositories.list(cs.client.project)
-        for repository in repositories:
-            if re.match(args.repo_reg,repository['name']):
-                if args.dryrun:
-                    print("Would have removed : %s" % repository['name'])
-                else:
-                    cs.repositories.delete_repository(repository['name'])
-                    print("Repository %s deleted" % repository['name'])
-    elif args.repository:
-        # unique repository removal
-        cs.repositories.delete_repository(args.repository)
-        print("Repository %s deleted" % args.repository)
-    else:
-        print("No repository of repository expression given")
+    # list all the repositories to delete
+    repositories = cs.repositories.list(cs.client.project)
+    for repo in repositories:
+        if re.match(args.repository, repo['name']):
+            if args.dryrun:
+                print("Would have deleted : %s" % repo['name'])
+            else:
+                cs.repositories.delete_repository(repo['name'])
+                print("Repository %s deleted" % repo['name'])
+
 
 @utils.arg('repository', metavar='<repository>', help='Name of repository.')
 def do_tags_list(cs, args):
@@ -388,10 +380,12 @@ def do_tags_list(cs, args):
 @utils.arg('tag', metavar='<tag>', help='Name of the tag.')
 def do_tags_delete(cs, args):
     """delete tag of a relevant repository."""
-    rc = cs.repositories.delete_tags(args.repository, args.tag)
-
-    print("Delete tag '%s:%s' sucessfullywith return code %s" %
-          (args.repository, args.tag, rc))
+    try:
+        rc = cs.repositories.delete_tags(args.repository, args.tag)
+        print("Delete tag '%s:%s' sucessfully with return code %s" %
+              (args.repository, args.tag, rc))
+    except exp.NotFound as e:
+        print("%s:%s not found : %s" % (args.repository, args.tag, e.message))
 
 
 @utils.arg(
@@ -416,7 +410,7 @@ def do_tags_delete_reg(cs, args):
     repositories = cs.repositories.list(cs.client.project)
     matching_repositories = []
     for repository in repositories:
-        if re.match(args.repository,repository['name']):
+        if re.match(args.repository, repository['name']):
             print("Found repository : %s" % repository['name'])
             matching_repositories.append(repository['name'])
     # List the tags and keep the matching ones
@@ -424,12 +418,13 @@ def do_tags_delete_reg(cs, args):
         tags = cs.repositories.list_tags(repository)
 
         for tag in tags:
-            if re.match(args.tag,tag['name']):
+            if re.match(args.tag, tag['name']):
                 if args.dryrun:
-                    print("Would have removed : %s:%s" % (repository,tag['name']))
-                else:                    
+                    print("Would have removed : %s:%s" %
+                          (repository, tag['name']))
+                else:
                     cs.repositories.delete_tags(repository, tag['name'])
-                    print("Removed : %s:%s" % (repository,tag['name']))
+                    print("Removed : %s:%s" % (repository, tag['name']))
 
 
 @utils.arg(
