@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import getpass
 import logging
+import re
 
 from oslo_utils import strutils
 
@@ -327,9 +328,11 @@ def do_list(cs, args):
             manifest = cs.repositories.get_manifests(item['name'],
                                                      tag['name'])
             size = 0
+
             for layer in manifest['manifest']['layers']:
                 size += layer['size']
             item['size'] = size
+
             if tag['name'] != 'latest':
                 item['name'] = repo['name'] + ":" + tag['name']
             data.append(item)
@@ -341,13 +344,87 @@ def do_list(cs, args):
     utils.print_list(data, fields, sortby=args.sortby)
 
 
+@utils.arg(
+    'repository',
+    metavar='<repository>',
+    help='Regular Expression of repository to be deleted.')
+@utils.arg(
+    '--dry-run',
+    '-d',
+    dest='dryrun',
+    action="store_true",
+    help="will only print what would have been deleted")
+def do_repository_delete(cs, args):
+    """Delete repository"""
+    # list all the repositories to delete
+    repositories = cs.repositories.list(cs.client.project)
+    for repo in repositories:
+        if re.match(args.repository, repo['name']):
+            if args.dryrun:
+                print("Would have deleted : %s" % repo['name'])
+            else:
+                cs.repositories.delete_repository(repo['name'])
+                print("Repository %s deleted" % repo['name'])
+
+
 @utils.arg('repository', metavar='<repository>', help='Name of repository.')
-def do_list_tags(cs, args):
+def do_tags_list(cs, args):
     """Get tags of a relevant repository."""
     tags = cs.repositories.list_tags(args.repository)
     fields = ["name", 'author', 'architecture',
               'os', 'docker_version', 'created']
     utils.print_list(tags, fields, sortby="name")
+
+
+@utils.arg('repository', metavar='<repository>', help='Name of repository.')
+@utils.arg('tag', metavar='<tag>', help='Name of the tag.')
+def do_tags_delete(cs, args):
+    """delete tag of a relevant repository."""
+    try:
+        rc = cs.repositories.delete_tags(args.repository, args.tag)
+        print("Delete tag '%s:%s' sucessfully with return code %s" %
+              (args.repository, args.tag, rc))
+    except exp.NotFound as e:
+        print("%s:%s not found : %s" % (args.repository, args.tag, e.message))
+
+
+@utils.arg(
+    '--repository',
+    '-r',
+    dest='repository',
+    help='repository regular expression')
+@utils.arg(
+    '--tag',
+    '-t',
+    dest='tag',
+    help='tag regular expression.')
+@utils.arg(
+    '--dry-run',
+    '-d',
+    dest='dryrun',
+    action="store_true",
+    help="will only print what would have been removed")
+def do_tags_delete_reg(cs, args):
+    """delete all tags that matches the expression of a relevant repository."""
+    # List the repositories and keep the maching ones
+    repositories = cs.repositories.list(cs.client.project)
+    matching_repositories = []
+    for repository in repositories:
+        if re.match(args.repository, repository['name']):
+            print("Found repository : %s" % repository['name'])
+            matching_repositories.append(repository['name'])
+    # List the tags and keep the matching ones
+    for repository in matching_repositories:
+        tags = cs.repositories.list_tags(repository)
+
+        for tag in tags:
+            if re.match(args.tag, tag['name']):
+                if args.dryrun:
+                    print("Would have removed : %s:%s" %
+                          (repository, tag['name']))
+                else:
+                    cs.repositories.delete_tags(repository, tag['name'])
+                    print("Removed : %s:%s" % (repository, tag['name']))
 
 
 @utils.arg(
