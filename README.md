@@ -63,6 +63,7 @@ Create an alias:
 alias harbor='docker run \
  -e HARBOR_USERNAME="admin" \
  -e HARBOR_PASSWORD="Harbor12345" \
+ -e HARBOR_PROJECT=1 \
  -e HARBOR_URL="http://localhost" \
  --rm krystism/harborclient harbor'
 ```
