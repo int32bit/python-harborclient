@@ -5,7 +5,7 @@ Harbor Client interface. Handles the REST calls and responses.
 import copy
 import hashlib
 import logging
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 from oslo_utils import importutils
 import requests
