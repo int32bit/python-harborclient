@@ -44,6 +44,9 @@ class HTTPClient(object):
         self.api_version = api_version or api_versions.APIVersion()
         self.timings = timings
         self.http_log_debug = http_log_debug
+        self.sid = ''
+        self.sid_old = 'beegosessionID'
+        self.sid_new = 'sid'
         # Has no protocol, use http
         if not urlparse(baseurl).scheme:
             self.baseurl = 'http://' + baseurl
@@ -85,7 +88,7 @@ class HTTPClient(object):
         """Forget all of our authentication information."""
         requests.get(
             '%s://%s/logout' % (self.protocol, self.host),
-            cookies={'beegosessionID': self.session_id},
+            cookies={self.sid: self.session_id},
             verify=self.verify_cert)
         logging.debug("Successfully logout")
 
@@ -220,7 +223,7 @@ class HTTPClient(object):
             body = self._time_request(
                 url,
                 method,
-                cookies={'beegosessionID': self.session_id},
+                cookies={self.sid: self.session_id},
                 **kwargs)
             return body
         except exceptions.Unauthorized as e:
@@ -265,7 +268,7 @@ class HTTPClient(object):
 
         try:
             resp = requests.post(
-                self.baseurl + "/login",
+                self.baseurl + "/c/login",
                 data={'principal': self.username,
                       'password': self.password},
                 verify=self.verify_cert)
@@ -277,7 +280,16 @@ class HTTPClient(object):
                    " TLS (https) requests.")
             raise exceptions.AuthorizationFailure(msg)
         if resp.status_code == 200:
-            self.session_id = resp.cookies.get('beegosessionID')
+            self.session_id = resp.cookies.get(self.sid_old)
+            self.sid = self.sid_old
+            if not self.session_id:
+                logging.debug("On newer version, cookie name is sid")
+                self.session_id = resp.cookies.get(self.sid_new)
+                self.sid = self.sid_new
+            if not self.session_id:
+                reason = "Tried cookie with names '%s' and '%s' and still no luck" % (
+                        self.sid_old, self.sid_new)
+                raise exceptions.AuthorizationFailure(reason)
             logging.debug(
                 "Successfully login, session id: %s" % self.session_id)
         if resp.status_code >= 400:
